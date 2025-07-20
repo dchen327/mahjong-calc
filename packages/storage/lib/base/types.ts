@@ -52,3 +52,22 @@ export interface ThemeStateType {
 export type ThemeStorageType = BaseStorageType<ThemeStateType> & {
   toggle: () => Promise<void>;
 };
+
+export interface MahjongGameState {
+  declaredSets: string[];
+  concealedTiles: string[];
+  winningTile: string | null;
+  winFromWall: boolean;
+  winFromDiscard: boolean;
+  roundWind: 'east' | 'south' | 'west' | 'north' | null;
+  seatWind: 'east' | 'south' | 'west' | 'north' | null;
+  lastTileInGame: boolean;
+  lastTileOfKind: boolean;
+  replacementTile: boolean;
+  robbingTheKong: boolean;
+}
+
+export type MahjongGameStorageType = BaseStorageType<MahjongGameState> & {
+  updateGameState: (partialState: Partial<MahjongGameState>) => Promise<void>;
+  resetGameState: () => Promise<void>;
+};
