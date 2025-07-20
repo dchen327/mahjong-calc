@@ -54,7 +54,7 @@ export type ThemeStorageType = BaseStorageType<ThemeStateType> & {
 };
 
 export interface MahjongGameState {
-  declaredSets: string[];
+  declaredSets: string[][];
   concealedTiles: string[];
   winningTile: string | null;
   winFromWall: boolean;
