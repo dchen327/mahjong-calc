@@ -66,6 +66,10 @@ const manifest = {
       matches: ['http://*/*', 'https://*/*', '<all_urls>'],
       css: ['content.css'],
     },
+    {
+      matches: ['https://mahjongsoft.com/*'],
+      js: ['content/mahjongsoft.iife.js'],
+    },
   ],
   devtools_page: 'devtools/index.html',
   web_accessible_resources: [
