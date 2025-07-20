@@ -38,7 +38,8 @@ const manifest = {
     type: 'module',
   },
   action: {
-    default_popup: 'popup/index.html',
+    // default_popup: 'popup/index.html',
+    default_title: 'Show side panel',
     default_icon: 'icon-34.png',
   },
   icons: {
