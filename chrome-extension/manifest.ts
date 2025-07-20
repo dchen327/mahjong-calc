@@ -38,7 +38,6 @@ const manifest = {
     type: 'module',
   },
   action: {
-    // default_popup: 'popup/index.html',
     default_title: 'Show side panel',
     default_icon: 'icon-34.png',
   },
@@ -53,14 +52,6 @@ const manifest = {
     {
       matches: ['https://example.com/*'],
       js: ['content/example.iife.js'],
-    },
-    {
-      matches: ['http://*/*', 'https://*/*', '<all_urls>'],
-      js: ['content-ui/all.iife.js'],
-    },
-    {
-      matches: ['https://example.com/*'],
-      js: ['content-ui/example.iife.js'],
     },
     {
       matches: ['http://*/*', 'https://*/*', '<all_urls>'],
