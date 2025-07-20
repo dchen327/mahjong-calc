@@ -4,7 +4,7 @@ import type { MahjongGameState, MahjongGameStorageType } from '../base/index.js'
 const defaultMahjongGameState: MahjongGameState = {
   declaredSets: [],
   concealedTiles: [],
-  winningTile: null,
+  winningTile: 'unknown',
   winFromWall: false,
   winFromDiscard: false,
   roundWind: null,
