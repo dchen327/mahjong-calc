@@ -1,11 +1,11 @@
 {
   "extensionDescription": {
-    "description": "Extension description",
-    "message": "Chrome extension boilerplate developed with Vite, React and Typescript"
+    "description": "Mahjong Helper",
+    "message": "Chrome extension developed with Vite, React and Typescript"
   },
   "extensionName": {
-    "description": "Extension name",
-    "message": "Chrome extension boilerplate"
+    "description": "Mahjong Helper",
+    "message": "Mahjong Helper"
   },
   "toggleTheme": {
     "message": "Toggle theme"
