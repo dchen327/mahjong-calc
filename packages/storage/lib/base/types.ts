@@ -59,7 +59,7 @@ export interface MahjongGameState {
   winningTile: string;
   winFromWall: boolean;
   winFromDiscard: boolean;
-  roundWind: string | null;
+  prevalentWind: string | null;
   seatWind: string | null;
   lastTileInGame: boolean;
   lastTileOfKind: boolean;
@@ -69,5 +69,4 @@ export interface MahjongGameState {
 
 export type MahjongGameStorageType = BaseStorageType<MahjongGameState> & {
   updateGameState: (partialState: Partial<MahjongGameState>) => Promise<void>;
-  resetGameState: () => Promise<void>;
 };

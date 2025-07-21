@@ -1,4 +1,5 @@
-import { mahjongGameStateStorage } from '@extension/storage';
+import { handScoreStorage, mahjongGameStateStorage } from '@extension/storage';
+import type { MahjongGameState } from '@extension/storage/lib/base';
 
 console.log('[CEB] mahjong soft content script loaded');
 
@@ -122,7 +123,7 @@ const parseRow3 = (table: HTMLTableElement) => {
   };
 
   return {
-    roundWind: getWind('round_wind'),
+    prevalentWind: getWind('round_wind'),
     seatWind: getWind('seat_wind'),
     lastTileInGame: !!table.querySelector<HTMLInputElement>('#last_tile_game')?.checked,
     lastTileOfKind: !!table.querySelector<HTMLInputElement>('#last_tile_kind')?.checked,
@@ -143,6 +144,8 @@ if (!handElement) {
     characterData: true,
   };
 
+  let lastGameState: MahjongGameState | null = null;
+
   const observer = new MutationObserver(() => {
     console.log('[CEB] Detected DOM change in monitored tables. Updating game state.');
 
@@ -154,10 +157,10 @@ if (!handElement) {
           winningTile: 'unknown',
           winFromWall: false,
         };
-    const { roundWind, seatWind, lastTileInGame, lastTileOfKind, replacementTile, robbingTheKong } = row3Table
+    const { prevalentWind, seatWind, lastTileInGame, lastTileOfKind, replacementTile, robbingTheKong } = row3Table
       ? parseRow3(row3Table)
       : {
-          roundWind: null,
+          prevalentWind: null,
           seatWind: null,
           lastTileInGame: false,
           lastTileOfKind: false,
@@ -165,19 +168,28 @@ if (!handElement) {
           robbingTheKong: false,
         };
 
-    mahjongGameStateStorage.updateGameState({
+    const newGameState: MahjongGameState = {
       declaredSets,
       concealedTiles,
       winningTile: winningTile ?? 'unknown',
       winFromWall,
       winFromDiscard: !winFromWall,
-      roundWind,
+      prevalentWind,
       seatWind,
       lastTileInGame,
       lastTileOfKind,
       replacementTile,
       robbingTheKong,
-    });
+    };
+
+    const hasChanged = !lastGameState || JSON.stringify(lastGameState) !== JSON.stringify(newGameState);
+
+    if (hasChanged) {
+      mahjongGameStateStorage.updateGameState(newGameState);
+      // Updated state invalidates previous hand score, set to 0
+      handScoreStorage.updateScore(0).catch(error => console.error('Failed to reset hand score:', error));
+      lastGameState = newGameState;
+    }
   });
 
   [row1Table, row2Table, row3Table].forEach(table => {

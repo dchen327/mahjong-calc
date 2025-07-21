@@ -7,7 +7,7 @@ const defaultMahjongGameState: MahjongGameState = {
   winningTile: 'unknown',
   winFromWall: false,
   winFromDiscard: false,
-  roundWind: null,
+  prevalentWind: null,
   seatWind: null,
   lastTileInGame: false,
   lastTileOfKind: false,
@@ -20,6 +20,11 @@ const mahjongGameStorage = createStorage<MahjongGameState>('mahjong-game-storage
   liveUpdate: true,
 });
 
+const _handScoreStorage = createStorage<number>('mahjong-hand-score', 0, {
+  storageEnum: StorageEnum.Local,
+  liveUpdate: true,
+});
+
 export const mahjongGameStateStorage: MahjongGameStorageType = {
   ...mahjongGameStorage,
   updateGameState: async partialState => {
@@ -28,7 +33,11 @@ export const mahjongGameStateStorage: MahjongGameStorageType = {
       ...partialState,
     }));
   },
-  resetGameState: async () => {
-    await mahjongGameStorage.set(() => defaultMahjongGameState);
+};
+
+export const handScoreStorage = {
+  ..._handScoreStorage,
+  updateScore: async (score: number) => {
+    await _handScoreStorage.set(() => score);
   },
 };
