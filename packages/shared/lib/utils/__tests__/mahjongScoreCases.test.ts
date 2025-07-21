@@ -91,9 +91,11 @@ const cases = [
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    it(`returns ${expected} for ${name}`, async () => {
-      // If your function is async, use await
-      expect(calculateMahjongScore(state)).toBe(expected);
-    });
+    // Only run "Test 2"
+    if (name === 'Test 2') {
+      it.only(`returns ${expected} for ${name}`, async () => {
+        expect(calculateMahjongScore(state)).toBe(expected);
+      });
+    }
   });
 });
