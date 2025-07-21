@@ -20,7 +20,8 @@
     "lint:fix": "pnpm lint --fix",
     "format": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit",
-    "postinstall": "pnpm ready"
+    "postinstall": "pnpm ready",
+    "test": "vitest run"
   },
   "dependencies": {
     "react-error-boundary": "^6.0.0"
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@extension/storage": "workspace:*",
     "@extension/tsconfig": "workspace:*",
-    "type-fest": "^4.41.0"
+    "type-fest": "^4.41.0",
+    "vitest": "^3.2.4"
   }
 }
