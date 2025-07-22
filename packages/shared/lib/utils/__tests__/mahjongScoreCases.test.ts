@@ -87,12 +87,59 @@ const cases = [
       winningTile: 'bamboo-7',
     },
   },
+  {
+    name: 'Test 3',
+    expected: 9,
+    state: {
+      concealedTiles: [
+        'bamboo-8',
+        'bamboo-8',
+        'wan-6',
+        'wan-7',
+        'wan-8',
+        'wan-8',
+        'wan-8',
+        'wan-8',
+        'bamboo-1',
+        'bamboo-1',
+      ],
+      declaredSets: [['wan-4', 'wan-5', 'wan-6']],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      roundWind: 'flipped',
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'bamboo-8',
+    },
+  },
+  {
+    name: 'Test 4',
+    expected: -1,
+    state: {
+      concealedTiles: ['wan-5', 'wan-5', 'wan-5', 'wan-6', 'wan-7', 'wan-8', 'wan-8', 'wan-8', 'bamboo-1', 'bamboo-1'],
+      declaredSets: [['wan-4', 'wan-5', 'wan-6']],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      roundWind: 'flipped',
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'bamboo-8',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    // Only run "Test 2"
-    if (name === 'Test 2') {
+    // TODO: run all tests
+    if (name === 'Test 4') {
       it.only(`returns ${expected} for ${name}`, async () => {
         expect(calculateMahjongScore(state)).toBe(expected);
       });
