@@ -1,3 +1,4 @@
+import { mahjongScoringRules } from './mahjongScoringRules.js';
 import { compareTiles, isSameTile, isSequential, parseTile } from './mahjongTile.js';
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
 import type { MahjongGroup, MahjongTile } from 'index.mjs';
@@ -91,10 +92,17 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
   return results;
 };
 
+// Score a single grouping using all rules
 const scoreGrouping = (grouping: MahjongGroup[]): number => {
-  console.log('---- Grouping ----');
-  console.log(grouping);
-  return grouping.length;
+  console.log('Scoring grouping:', grouping);
+  let score = 0;
+  mahjongScoringRules.forEach(rule => {
+    if (rule.evaluate(grouping)) {
+      console.log(`Rule matched | ${rule.name} | ${rule.points} points`);
+      score += rule.points;
+    }
+  });
+  return score;
 };
 
 export const calculateMahjongScore = (gameState: MahjongGameState): number => {

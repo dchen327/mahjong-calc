@@ -174,12 +174,40 @@ const cases = [
       winningTile: 'wind-north',
     },
   },
+  {
+    name: 'Test 5',
+    expected: 6,
+    state: {
+      concealedTiles: [
+        'circle-4',
+        'circle-5',
+        'circle-6',
+        'wan-5',
+        'wan-6',
+        'wan-7',
+        'circle-1',
+        'circle-2',
+        'circle-3',
+        'circle-1',
+      ],
+      declaredSets: [['wan-5', 'wan-6', 'wan-7']],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'circle-1',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
     // TODO: run all tests
-    if (name === 'Test 4') {
+    if (name === 'Test 5') {
       it.only(`returns ${expected} for ${name}`, async () => {
         expect(calculateMahjongScore(state)).toBe(expected);
       });

@@ -1,4 +1,4 @@
-import type { MahjongTile, TileType } from './types.js';
+import type { ChowGroup, MahjongTile, TileType } from './types.js';
 
 const tileTypeOrder: TileType[] = ['bamboo', 'wan', 'circle', 'wind', 'dragon', 'flower', 'season'];
 
@@ -51,3 +51,6 @@ export const isSequential = (tiles: MahjongTile[]): boolean => {
   const values = [a.value, b.value, c.value].sort((x, y) => x - y);
   return values[1] === values[0] + 1 && values[2] === values[1] + 1;
 };
+
+export const isSameChow = (a: ChowGroup, b: ChowGroup): boolean =>
+  a.first.type === b.first.type && a.first.value === b.first.value;

@@ -47,3 +47,10 @@ export interface PairGroup extends BaseGroup {
 
 // Union type for all groups
 export type MahjongGroup = ChowGroup | PungGroup | KongGroup | PairGroup;
+
+export interface MahjongScoringRule {
+  name: string;
+  points: number;
+  evaluate: (grouping: MahjongGroup[]) => boolean;
+  excludes?: string[];
+}
