@@ -2,16 +2,21 @@ import { compareTiles, isSameTile, isSequential, parseTile } from './mahjongTile
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
 import type { MahjongGroup, MahjongTile } from 'index.mjs';
 
-const getAllGroups = (gameState: MahjongGameState): MahjongTile[][] => {
+// Generic cartesian product for arrays of arrays
+const cartesianProduct = <T>(arrays: T[][]): T[][] =>
+  arrays.reduce<T[][]>(
+    (acc, curr) => acc.map(a => curr.map(b => [...a, ...b])).reduce((a, b) => a.concat(b), []),
+    [[]],
+  );
+
+const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   // Return list of different 14 tile groupings
-  const groups: MahjongGroup[][] = [];
   // TODO: fix naming later, right now sets are unparsed, then parsed into groups
   const { declaredSets, concealedTiles, winningTile } = gameState;
   // Add parsed declared sets to groups
   const declaredGroups: MahjongGroup[] = declaredSets
     .map(set => parseDeclaredSet(set.map(parseTile)))
     .filter(Boolean) as MahjongGroup[];
-  console.log('declared groups', declaredGroups);
 
   // non declared is concealedTiles + winningTile
   const nonDeclaredTiles = [...concealedTiles, winningTile];
@@ -27,14 +32,19 @@ const getAllGroups = (gameState: MahjongGameState): MahjongTile[][] => {
     groupedNonDeclared[parsedTile.type].push(parsedTile);
   });
 
-  // for each list of tiles by type, sort it
-  Object.values(groupedNonDeclared).forEach(tileList => {
+  // For each suit/type, get all possible groupings
+  const suitGroupings: MahjongGroup[][][] = Object.values(groupedNonDeclared).map(tileList => {
     tileList.sort(compareTiles);
-    console.log('tileList', tileList);
-    console.log(findAllSuitGroupings(tileList));
+    return findAllSuitGroupings(tileList);
   });
 
-  return groups;
+  // Cartesian product of all suit groupings
+  const allCombinations = cartesianProduct(suitGroupings);
+
+  // Add declared groups to each combination
+  const finalGroupings = allCombinations.map(groups => [...declaredGroups, ...groups.flat()]);
+
+  return finalGroupings;
 };
 
 const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {

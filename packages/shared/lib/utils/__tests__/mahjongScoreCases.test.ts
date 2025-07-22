@@ -131,7 +131,7 @@ const cases = [
       seatWind: 'flipped',
       winFromDiscard: false,
       winFromWall: true,
-      winningTile: 'bamboo-8',
+      winningTile: 'bamboo-1',
     },
   },
 ];
