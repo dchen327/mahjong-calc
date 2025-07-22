@@ -92,6 +92,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
 };
 
 const scoreGrouping = (grouping: MahjongGroup[]): number => {
+  console.log('---- Grouping ----');
   console.log(grouping);
   return grouping.length;
 };
