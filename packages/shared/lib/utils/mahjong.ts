@@ -93,19 +93,26 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
 };
 
 // Score a single grouping using all rules
-const scoreGrouping = (grouping: MahjongGroup[]): number => {
-  console.log('Scoring grouping:', grouping);
+const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): number => {
   let score = 0;
+  const nameHeader = 'Name'.padEnd(30);
+  const quantHeader = 'Quantity'.padEnd(8);
+  const pointsHeader = 'Points'.padEnd(8);
+  console.log(`${nameHeader} ${quantHeader} ${pointsHeader}`);
   mahjongScoringRules.forEach(rule => {
-    if (rule.evaluate(grouping)) {
-      console.log(`Rule matched | ${rule.name} | ${rule.points} points`);
-      score += rule.points;
+    const ruleQuant = rule.evaluate(grouping, gameState);
+    if (ruleQuant > 0) {
+      const nameCol = (rule.name + ' '.repeat(30)).slice(0, 30);
+      const quantCol = `x${ruleQuant}`.padEnd(8);
+      const pointsCol = `${rule.points} pts`.padEnd(8);
+      console.log(`${nameCol} ${quantCol} ${pointsCol}`);
+      score += rule.points * ruleQuant;
     }
   });
   return score;
 };
 
 export const calculateMahjongScore = (gameState: MahjongGameState): number => {
-  const scores = getAllGroups(gameState).map(scoreGrouping);
+  const scores = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
   return Math.max(...scores);
 };

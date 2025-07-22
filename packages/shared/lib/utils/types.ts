@@ -1,4 +1,5 @@
 import type { COLORS } from './const.js';
+import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
 import type { TupleToUnion } from 'type-fest';
 
 export type * from 'type-fest';
@@ -51,6 +52,6 @@ export type MahjongGroup = ChowGroup | PungGroup | KongGroup | PairGroup;
 export interface MahjongScoringRule {
   name: string;
   points: number;
-  evaluate: (grouping: MahjongGroup[]) => boolean;
+  evaluate: (grouping: MahjongGroup[], gameState: MahjongGameState) => number;
   excludes?: string[];
 }

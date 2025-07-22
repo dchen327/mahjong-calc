@@ -1,7 +1,8 @@
-import type { ChowGroup, MahjongTile, TileType } from './types.js';
+import type { ChowGroup, KongGroup, MahjongTile, PungGroup, TileType } from './types.js';
 
 const tileTypeOrder: TileType[] = ['bamboo', 'wan', 'circle', 'wind', 'dragon', 'flower', 'season'];
 
+// Tile related functions
 export const parseTile = (raw: string): MahjongTile => {
   const [type, val] = raw.split('-');
   return {
@@ -52,5 +53,35 @@ export const isSequential = (tiles: MahjongTile[]): boolean => {
   return values[1] === values[0] + 1 && values[2] === values[1] + 1;
 };
 
+// Group related functions
+export const sortChows = (chows: ChowGroup[]): ChowGroup[] =>
+  chows.slice().sort((a, b) => {
+    if (a.first.type < b.first.type) return -1;
+    if (a.first.type > b.first.type) return 1;
+    return Number(a.first.value) - Number(b.first.value);
+  });
+
 export const isSameChow = (a: ChowGroup, b: ChowGroup): boolean =>
   a.first.type === b.first.type && a.first.value === b.first.value;
+
+export const isMixedChow = (a: ChowGroup, b: ChowGroup): boolean =>
+  a.first.value === b.first.value && a.first.type !== b.first.type;
+
+export const isShortStraight = (a: ChowGroup, b: ChowGroup): boolean => {
+  if (a.first.type !== b.first.type) return false;
+  if (typeof a.first.value !== 'number' || typeof b.first.value !== 'number') return false;
+  return Math.abs(a.first.value - b.first.value) === 3;
+};
+
+export const isTerminalOrHonorPung = (
+  group: PungGroup | KongGroup,
+  seatWind?: string | null,
+  prevalentWind?: string | null,
+): boolean => {
+  const tile = group.tile;
+  if (isWind(tile)) {
+    // Exclude seat/prevalent wind
+    return tile.value !== seatWind && tile.value !== prevalentWind;
+  }
+  return isTerminal(tile);
+};
