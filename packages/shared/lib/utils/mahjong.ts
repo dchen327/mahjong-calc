@@ -4,10 +4,7 @@ import type { MahjongGroup, MahjongTile } from 'index.mjs';
 
 // Generic cartesian product for arrays of arrays
 const cartesianProduct = <T>(arrays: T[][]): T[][] =>
-  arrays.reduce<T[][]>(
-    (acc, curr) => acc.map(a => curr.map(b => [...a, ...b])).reduce((a, b) => a.concat(b), []),
-    [[]],
-  );
+  arrays.reduce<T[][]>((acc, curr) => acc.map(a => curr.map(b => a.concat(b))).reduce((a, b) => a.concat(b), []), [[]]);
 
 const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   // Return list of different 14 tile groupings
@@ -94,7 +91,12 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
   return results;
 };
 
+const scoreGrouping = (grouping: MahjongGroup[]): number => {
+  console.log(grouping);
+  return grouping.length;
+};
+
 export const calculateMahjongScore = (gameState: MahjongGameState): number => {
-  getAllGroups(gameState);
-  return Math.floor(Math.random() * 10) + 1;
+  const scores = getAllGroups(gameState).map(scoreGrouping);
+  return Math.max(...scores);
 };

@@ -31,7 +31,6 @@ const cases = [
       lastTileOfKind: false,
       replacementTile: false,
       robbingTheKong: false,
-      roundWind: null,
     },
   },
   {
@@ -59,7 +58,6 @@ const cases = [
       prevalentWind: 'flipped',
       replacementTile: false,
       robbingTheKong: false,
-      roundWind: 'flipped',
       seatWind: 'flipped',
       winFromDiscard: false,
       winFromWall: true,
@@ -80,7 +78,6 @@ const cases = [
       prevalentWind: 'wind-west',
       replacementTile: false,
       robbingTheKong: false,
-      roundWind: 'flipped',
       seatWind: 'wind-east',
       winFromDiscard: true,
       winFromWall: false,
@@ -109,7 +106,6 @@ const cases = [
       prevalentWind: 'flipped',
       replacementTile: false,
       robbingTheKong: false,
-      roundWind: 'flipped',
       seatWind: 'flipped',
       winFromDiscard: false,
       winFromWall: true,
@@ -120,6 +116,23 @@ const cases = [
     name: 'Test 4',
     expected: -1,
     state: {
+      concealedTiles: ['wan-1', 'wan-1', 'wan-3', 'wan-3', 'circle-1', 'circle-1', 'circle-7', 'circle-7', 'wind-east'],
+      declaredSets: [],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'bamboo-1',
+    },
+  },
+  {
+    name: 'Seven Pairs',
+    expected: -1,
+    state: {
       concealedTiles: ['wan-5', 'wan-5', 'wan-5', 'wan-6', 'wan-7', 'wan-8', 'wan-8', 'wan-8', 'bamboo-1', 'bamboo-1'],
       declaredSets: [['wan-4', 'wan-5', 'wan-6']],
       lastTileInGame: false,
@@ -127,7 +140,6 @@ const cases = [
       prevalentWind: 'flipped',
       replacementTile: false,
       robbingTheKong: false,
-      roundWind: 'flipped',
       seatWind: 'flipped',
       winFromDiscard: false,
       winFromWall: true,
@@ -139,7 +151,7 @@ const cases = [
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
     // TODO: run all tests
-    if (name === 'Test 4') {
+    if (name === 'Seven Pairs') {
       it.only(`returns ${expected} for ${name}`, async () => {
         expect(calculateMahjongScore(state)).toBe(expected);
       });
