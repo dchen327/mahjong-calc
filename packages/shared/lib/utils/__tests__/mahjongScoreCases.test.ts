@@ -169,8 +169,8 @@ const cases = [
       replacementTile: false,
       robbingTheKong: false,
       seatWind: 'flipped',
-      winFromDiscard: false,
-      winFromWall: true,
+      winFromDiscard: true,
+      winFromWall: false,
       winningTile: 'wind-north',
     },
   },
@@ -202,12 +202,64 @@ const cases = [
       winningTile: 'circle-1',
     },
   },
+  {
+    name: 'Test 6',
+    expected: 6,
+    state: {
+      concealedTiles: ['wan-5', 'wan-7', 'wan-3', 'wan-3'],
+      declaredSets: [
+        ['wan-7', 'wan-8', 'wan-9'],
+        ['circle-2', 'circle-3', 'circle-4'],
+        ['circle-7', 'circle-8', 'circle-9'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wan-6',
+    },
+  },
+  {
+    name: 'Test 7',
+    expected: 16,
+    state: {
+      concealedTiles: [
+        'dragon-red',
+        'dragon-red',
+        'dragon-red',
+        'wan-4',
+        'wan-5',
+        'wan-6',
+        'circle-3',
+        'circle-4',
+        'circle-5',
+        'bamboo-3',
+        'bamboo-4',
+        'bamboo-5',
+        'bamboo-9',
+      ],
+      declaredSets: [],
+      lastTileInGame: true,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'bamboo-9',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
     // TODO: run all tests
-    if (name === 'Test 5') {
+    if (name === 'Test 7') {
       it.only(`returns ${expected} for ${name}`, async () => {
         expect(calculateMahjongScore(state)).toBe(expected);
       });

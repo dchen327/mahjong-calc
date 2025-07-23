@@ -16,12 +16,13 @@ export type MahjongTile = { type: TileType; value: number | string };
 // Types for mahjong tile groups
 export interface BaseGroup {
   kind: string;
+  tile: MahjongTile;
 }
 
 // Chow group, store first tile in sequence
 export interface ChowGroup extends BaseGroup {
   kind: 'chow';
-  first: MahjongTile;
+  tile: MahjongTile;
   concealed: boolean;
 }
 

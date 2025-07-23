@@ -56,21 +56,21 @@ export const isSequential = (tiles: MahjongTile[]): boolean => {
 // Group related functions
 export const sortChows = (chows: ChowGroup[]): ChowGroup[] =>
   chows.slice().sort((a, b) => {
-    if (a.first.type < b.first.type) return -1;
-    if (a.first.type > b.first.type) return 1;
-    return Number(a.first.value) - Number(b.first.value);
+    if (a.tile.type < b.tile.type) return -1;
+    if (a.tile.type > b.tile.type) return 1;
+    return Number(a.tile.value) - Number(b.tile.value);
   });
 
 export const isSameChow = (a: ChowGroup, b: ChowGroup): boolean =>
-  a.first.type === b.first.type && a.first.value === b.first.value;
+  a.tile.type === b.tile.type && a.tile.value === b.tile.value;
 
 export const isMixedChow = (a: ChowGroup, b: ChowGroup): boolean =>
-  a.first.value === b.first.value && a.first.type !== b.first.type;
+  a.tile.value === b.tile.value && a.tile.type !== b.tile.type;
 
 export const isShortStraight = (a: ChowGroup, b: ChowGroup): boolean => {
-  if (a.first.type !== b.first.type) return false;
-  if (typeof a.first.value !== 'number' || typeof b.first.value !== 'number') return false;
-  return Math.abs(a.first.value - b.first.value) === 3;
+  if (a.tile.type !== b.tile.type) return false;
+  if (typeof a.tile.value !== 'number' || typeof b.tile.value !== 'number') return false;
+  return Math.abs(a.tile.value - b.tile.value) === 3;
 };
 
 export const isTerminalOrHonorPung = (

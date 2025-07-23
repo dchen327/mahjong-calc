@@ -56,7 +56,7 @@ const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
     return { kind: 'kong', tile: tiles[0], concealed: false, declared: true };
   }
   if (tiles.length === 3 && isSequential(tiles)) {
-    return { kind: 'chow', first: tiles[0], concealed: false };
+    return { kind: 'chow', tile: tiles[0], concealed: false };
   }
   return null;
 };
@@ -77,7 +77,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
 
     // Try to make a chow (3 sequential tiles, only for suited tiles)
     if (remaining.length >= 3 && isSequential(remaining.slice(0, 3))) {
-      search(remaining.slice(3), [...currentGroups, { kind: 'chow', first: remaining[0], concealed: true }]);
+      search(remaining.slice(3), [...currentGroups, { kind: 'chow', tile: remaining[0], concealed: true }]);
     }
 
     // Try to make a pair (2 identical tiles)
@@ -99,16 +99,29 @@ const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): n
   const quantHeader = 'Quantity'.padEnd(8);
   const pointsHeader = 'Points'.padEnd(8);
   console.log(`${nameHeader} ${quantHeader} ${pointsHeader}`);
-  mahjongScoringRules.forEach(rule => {
-    const ruleQuant = rule.evaluate(grouping, gameState);
-    if (ruleQuant > 0) {
-      const nameCol = (rule.name + ' '.repeat(30)).slice(0, 30);
-      const quantCol = `x${ruleQuant}`.padEnd(8);
-      const pointsCol = `${rule.points} pts`.padEnd(8);
-      console.log(`${nameCol} ${quantCol} ${pointsCol}`);
-      score += rule.points * ruleQuant;
-    }
+
+  // First pass: collect all matched rules
+  const matched = mahjongScoringRules
+    .map(rule => {
+      const quant = rule.evaluate(grouping, gameState);
+      return quant > 0 ? { rule, quant } : null;
+    })
+    .filter(Boolean) as { rule: (typeof mahjongScoringRules)[number]; quant: number }[];
+
+  // Second pass: filter out rules that are excluded by another matched rule
+  const final = matched.filter(
+    m => !matched.some(other => other !== m && other.rule.excludes && other.rule.excludes.includes(m.rule.name)),
+  );
+
+  // Print and sum
+  final.reverse().forEach(({ rule, quant }) => {
+    const nameCol = (rule.name + ' '.repeat(30)).slice(0, 30);
+    const quantCol = `x${quant}`.padEnd(8);
+    const pointsCol = `${rule.points} pts`.padEnd(8);
+    console.log(`${nameCol} ${quantCol} ${pointsCol}`);
+    score += rule.points * quant;
   });
+
   return score;
 };
 
