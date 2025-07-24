@@ -256,7 +256,7 @@ const cases = [
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
     // TODO: run all tests
-    if (name === 'Mixed Shifted Chows') {
+    if (name === 'Test 5') {
       it.only(`returns ${expected} for ${name}`, () => {
         expect(calculateMahjongScore(state)).toBe(expected);
       });

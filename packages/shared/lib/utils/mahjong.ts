@@ -3,6 +3,43 @@ import { compareTiles, isSameTile, isSequential, parseTile } from './mahjongTile
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
 import type { MahjongGroup, MahjongTile } from 'index.mjs';
 
+const allPlayableTiles = [
+  'bamboo-1',
+  'bamboo-2',
+  'bamboo-3',
+  'bamboo-4',
+  'bamboo-5',
+  'bamboo-6',
+  'bamboo-7',
+  'bamboo-8',
+  'bamboo-9',
+  'wan-1',
+  'wan-2',
+  'wan-3',
+  'wan-4',
+  'wan-5',
+  'wan-6',
+  'wan-7',
+  'wan-8',
+  'wan-9',
+  'circle-1',
+  'circle-2',
+  'circle-3',
+  'circle-4',
+  'circle-5',
+  'circle-6',
+  'circle-7',
+  'circle-8',
+  'circle-9',
+  'wind-east',
+  'wind-south',
+  'wind-west',
+  'wind-north',
+  'dragon-red',
+  'dragon-green',
+  'dragon-white',
+];
+
 // Generic cartesian product for arrays of arrays
 const cartesianProduct = <T>(arrays: T[][]): T[][] =>
   arrays.reduce<T[][]>((acc, curr) => acc.map(a => curr.map(b => a.concat(b))).reduce((a, b) => a.concat(b), []), [[]]);
@@ -58,6 +95,17 @@ const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
     return { kind: 'chow', tile: tiles[0], concealed: false };
   }
   return null;
+};
+
+const memoize = <Args extends unknown[], R>(fn: (...args: Args) => R): ((...args: Args) => R) => {
+  const cache = new Map<string, R>();
+  return (...args: Args): R => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key)!;
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
 };
 
 const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
@@ -152,6 +200,18 @@ const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): n
 
   return score;
 };
+
+export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[] => {
+  // Try all possible tiles as the winning tile
+  const waits: MahjongTile[] = [];
+  for (const tileStr of allPlayableTiles) {
+    const testState = { ...gameState, winningTile: tileStr };
+    if (getAllGroups(testState).length > 0) {
+      waits.push(parseTile(tileStr));
+    }
+  }
+  return waits;
+});
 
 export const calculateMahjongScore = (gameState: MahjongGameState): number => {
   const scores = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));

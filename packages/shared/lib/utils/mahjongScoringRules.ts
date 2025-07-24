@@ -1,3 +1,4 @@
+import { getWaitTiles } from './mahjong.js';
 import {
   isSameChow,
   isMixedChow,
@@ -147,6 +148,8 @@ export const edgeWait: MahjongScoringRule = {
   name: '11. Edge Wait',
   points: 1,
   evaluate: (grouping, gameState) => {
+    const waitingTiles = getWaitTiles(gameState);
+    if (waitingTiles.length > 1) return 0;
     const winningTile = parseTile(gameState.winningTile);
     if (isHonor(winningTile)) return 0;
     const chows = getChows(grouping).filter(group => group.tile.type === winningTile.type);
@@ -163,6 +166,8 @@ export const closedWait: MahjongScoringRule = {
   name: '12. Closed Wait',
   points: 1,
   evaluate: (grouping, gameState) => {
+    const waitingTiles = getWaitTiles(gameState);
+    if (waitingTiles.length > 1) return 0;
     const winningTile = parseTile(gameState.winningTile);
     if (isHonor(winningTile)) return 0;
     const chows = getChows(grouping).filter(group => group.tile.type === winningTile.type);
@@ -179,6 +184,8 @@ export const pairWait: MahjongScoringRule = {
   points: 1,
   excludes: ['11. Edge Wait', '12. Closed Wait'],
   evaluate: (grouping, gameState) => {
+    const waitingTiles = getWaitTiles(gameState);
+    if (waitingTiles.length > 1) return 0;
     const winningTile = parseTile(gameState.winningTile);
     const pairs = getPairs(grouping);
     return pairs.some(pair => isSameTile([pair.tile, winningTile])) ? 1 : 0;
@@ -418,12 +425,39 @@ export const mixedShiftedChows: MahjongScoringRule = {
 };
 
 // All Types - The player's hand contains a Bamboo tile, a Character tile, a Circle tile, a Dragon tile and a Wind tile.
+export const allTypes: MahjongScoringRule = {
+  name: '31. All Types',
+  points: 6,
+  evaluate: grouping => {
+    const types = new Set(grouping.map(group => group.tile.type));
+    return types.size === 5 ? 1 : 0;
+  },
+};
+
 // Melded Hand - Four melded groups and is won by discard.
-// Does not combine with:
-// Pair Wait
+export const meldedHand: MahjongScoringRule = {
+  name: '32. Melded Hand',
+  points: 6,
+  excludes: ['13. Pair Wait'],
+  evaluate: (grouping, gameState) => {
+    const meldedGroups = grouping.filter(group => group.kind !== 'pair' && !group.concealed);
+    return meldedGroups.length === 4 && gameState.winFromDiscard ? 1 : 0;
+  },
+};
+
 // Two Dragon Pungs - Two Pungs or Kongs of Dragons
 // Does not combine with:
 // Dragon Pung
+export const twoDragonPungs: MahjongScoringRule = {
+  name: '33. Two Dragon Pungs',
+  points: 6,
+  excludes: ['14. Dragon Pung'],
+  evaluate: grouping => {
+    const pungs = getPungs(grouping).filter(pung => pung.tile.type === 'dragon');
+    const kongs = getKongs(grouping).filter(kong => kong.tile.type === 'dragon');
+    return pungs.length + kongs.length >= 2 ? 1 : 0;
+  },
+};
 
 export const mahjongScoringRules: MahjongScoringRule[] = [
   pureDoubleChow, // 1 point
@@ -455,4 +489,7 @@ export const mahjongScoringRules: MahjongScoringRule[] = [
   allPungs, // 6 points
   halfFlush,
   mixedShiftedChows,
+  allTypes,
+  meldedHand,
+  twoDragonPungs,
 ];
