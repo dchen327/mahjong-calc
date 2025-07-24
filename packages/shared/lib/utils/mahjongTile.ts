@@ -1,4 +1,4 @@
-import type { ChowGroup, KongGroup, MahjongTile, PungGroup, TileType } from './types.js';
+import type { ChowGroup, KongGroup, MahjongGroup, MahjongTile, PairGroup, PungGroup, TileType } from './types.js';
 
 const tileTypeOrder: TileType[] = ['bamboo', 'wan', 'circle', 'wind', 'dragon', 'flower', 'season'];
 
@@ -54,6 +54,11 @@ export const isSequential = (tiles: MahjongTile[]): boolean => {
 };
 
 // Group related functions
+export const getChows = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'chow') as ChowGroup[];
+export const getPungs = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'pung') as PungGroup[];
+export const getKongs = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'kong') as KongGroup[];
+export const getPairs = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'pair') as PairGroup[];
+
 export const sortChows = (chows: ChowGroup[]): ChowGroup[] =>
   chows.slice().sort((a, b) => {
     if (a.tile.type < b.tile.type) return -1;
@@ -84,4 +89,12 @@ export const isTerminalOrHonorPung = (
     return tile.value !== seatWind && tile.value !== prevalentWind;
   }
   return isTerminal(tile);
+};
+
+// for outside hand
+export const isTerminalOrHonorGroup = (group: MahjongGroup): boolean => {
+  if (group.kind === 'pair' || group.kind === 'pung' || group.kind === 'kong')
+    return isHonor(group.tile) || isTerminal(group.tile);
+  if (group.kind === 'chow') return group.tile.value === 1 || group.tile.value === 7;
+  return false;
 };

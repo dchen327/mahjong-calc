@@ -38,7 +38,6 @@ export interface KongGroup extends BaseGroup {
   kind: 'kong';
   tile: MahjongTile;
   concealed: boolean;
-  declared: boolean;
 }
 
 // Pair group

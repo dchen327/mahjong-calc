@@ -31,10 +31,9 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   });
 
   // For each suit/type, get all possible groupings
-  const suitGroupings: MahjongGroup[][][] = Object.values(groupedNonDeclared).map(tileList => {
-    tileList.sort(compareTiles);
-    return findAllSuitGroupings(tileList);
-  });
+  const suitGroupings: MahjongGroup[][][] = Object.values(groupedNonDeclared).map(tileList =>
+    findAllSuitGroupings(tileList),
+  );
 
   // Cartesian product of all suit groupings
   const allCombinations = cartesianProduct(suitGroupings);
@@ -53,7 +52,7 @@ const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
     return { kind: 'pung', tile: tiles[0], concealed: false };
   }
   if (tiles.length === 4 && isSameTile(tiles)) {
-    return { kind: 'kong', tile: tiles[0], concealed: false, declared: true };
+    return { kind: 'kong', tile: tiles[0], concealed: false };
   }
   if (tiles.length === 3 && isSequential(tiles)) {
     return { kind: 'chow', tile: tiles[0], concealed: false };
@@ -63,32 +62,61 @@ const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
 
 const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
   const results: MahjongGroup[][] = [];
+  tiles.sort(compareTiles);
+  const seen = new Set<string>();
+  const serializeGrouping = (groups: MahjongGroup[]) =>
+    groups
+      .map(g => {
+        if (g.kind === 'chow' || g.kind === 'pung' || g.kind === 'pair') {
+          return `${g.kind}:${g.tile.type}-${g.tile.value}`;
+        }
+        return `${g.kind}`;
+      })
+      .sort()
+      .join('|');
 
   const search = (remaining: MahjongTile[], currentGroups: MahjongGroup[]) => {
     if (remaining.length === 0) {
-      results.push(currentGroups);
+      const key = serializeGrouping(currentGroups);
+      if (!seen.has(key)) {
+        seen.add(key);
+        results.push(currentGroups);
+      }
       return;
     }
 
-    // Try to make a pung (3 identical tiles)
-    if (remaining.length >= 3 && isSameTile(remaining.slice(0, 3))) {
-      search(remaining.slice(3), [...currentGroups, { kind: 'pung', tile: remaining[0], concealed: true }]);
+    // Try all possible pungs (only check sorted, consecutive tiles)
+    for (let i = 0; i < remaining.length - 2; i++) {
+      if (isSameTile([remaining[i], remaining[i + 1], remaining[i + 2]])) {
+        // Remove these three tiles by index
+        const next = remaining.filter((_, idx) => idx !== i && idx !== i + 1 && idx !== i + 2);
+        search(next, [...currentGroups, { kind: 'pung', tile: remaining[i], concealed: true }]);
+      }
     }
 
-    // Try to make a chow (3 sequential tiles, only for suited tiles)
-    if (remaining.length >= 3 && isSequential(remaining.slice(0, 3))) {
-      search(remaining.slice(3), [...currentGroups, { kind: 'chow', tile: remaining[0], concealed: true }]);
+    // Try all possible pairs
+    for (let i = 0; i < remaining.length - 1; i++) {
+      if (isSameTile([remaining[i], remaining[i + 1]])) {
+        const next = remaining.filter((_, idx) => idx !== i && idx !== i + 1);
+        search(next, [...currentGroups, { kind: 'pair', tile: remaining[i] }]);
+      }
     }
-
-    // Try to make a pair (2 identical tiles)
-    if (remaining.length >= 2 && isSameTile(remaining.slice(0, 2))) {
-      search(remaining.slice(2), [...currentGroups, { kind: 'pair', tile: remaining[0] }]);
+    // Try all possible chows (i < j < k)
+    for (let i = 0; i < remaining.length; i++) {
+      for (let j = i + 1; j < remaining.length; j++) {
+        for (let k = j + 1; k < remaining.length; k++) {
+          const trio = [remaining[i], remaining[j], remaining[k]];
+          if (isSequential(trio)) {
+            const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
+            search(next, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: true }]);
+          }
+        }
+      }
     }
-
-    // No group formed: do nothing (do not skip tiles for complete hands)
   };
 
   search(tiles, []);
+  // console.log(`Found ${results.length} groupings for ${tiles.map(t => `${t.type}-${t.value}`).join(', ')}`);
   return results;
 };
 

@@ -4,33 +4,30 @@ import { describe, it, expect } from 'vitest';
 const cases = [
   {
     name: 'Mixed Shifted Chows',
-    expected: 6,
+    expected: 12,
     state: {
-      declaredSets: [],
       concealedTiles: [
+        'wan-4',
+        'wan-6',
+        'bamboo-6',
+        'bamboo-7',
+        'bamboo-8',
         'bamboo-2',
         'bamboo-3',
         'bamboo-4',
         'circle-3',
-        'circle-4',
-        'circle-5',
-        'wan-4',
-        'wan-5',
-        'wan-6',
-        'bamboo-2',
-        'bamboo-3',
-        'wind-east',
-        'wind-east',
+        'circle-3',
       ],
-      winningTile: 'bamboo-1',
-      winFromWall: true,
-      winFromDiscard: false,
-      prevalentWind: null,
-      seatWind: null,
+      declaredSets: [['circle-3', 'circle-4', 'circle-5']],
       lastTileInGame: false,
       lastTileOfKind: false,
+      prevalentWind: 'flipped',
       replacementTile: false,
       robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wan-5',
     },
   },
   {
@@ -259,10 +256,13 @@ const cases = [
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
     // TODO: run all tests
-    if (name === 'Test 7') {
-      it.only(`returns ${expected} for ${name}`, async () => {
+    if (name === 'Mixed Shifted Chows') {
+      it.only(`returns ${expected} for ${name}`, () => {
         expect(calculateMahjongScore(state)).toBe(expected);
       });
     }
+    // it.only(`returns ${expected} for ${name}`, () => {
+    //   expect(calculateMahjongScore(state)).toBe(expected);
+    // });
   });
 });
