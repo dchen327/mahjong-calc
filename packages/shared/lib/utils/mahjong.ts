@@ -88,8 +88,8 @@ const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
   if (tiles.length === 3 && isSameTile(tiles)) {
     return { kind: 'pung', tile: tiles[0], concealed: false };
   }
-  if (tiles.length === 4 && isSameTile(tiles)) {
-    return { kind: 'kong', tile: tiles[0], concealed: false };
+  if (tiles.length === 4) {
+    return { kind: 'kong', tile: tiles[1], concealed: tiles[0].type === 'flipped' };
   }
   if (tiles.length === 3 && isSequential(tiles)) {
     return { kind: 'chow', tile: tiles[0], concealed: false };
@@ -189,6 +189,9 @@ const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): n
     m => !matched.some(other => other !== m && other.rule.excludes && other.rule.excludes.includes(m.rule.name)),
   );
 
+  // If no rules matched, add 43. Chicken Hand x1
+  if (final.length === 0) final.push({ rule: { name: '43. Chicken Hand', points: 8, evaluate: () => 8 }, quant: 1 });
+
   // Print and sum
   final.reverse().forEach(({ rule, quant }) => {
     const nameCol = (rule.name + ' '.repeat(30)).slice(0, 30);
@@ -214,6 +217,7 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
 });
 
 export const calculateMahjongScore = (gameState: MahjongGameState): number => {
+  console.log(getAllGroups(gameState));
   const scores = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
   return Math.max(...scores);
 };

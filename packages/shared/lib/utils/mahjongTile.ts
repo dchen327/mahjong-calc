@@ -98,3 +98,15 @@ export const isTerminalOrHonorGroup = (group: MahjongGroup): boolean => {
   if (group.kind === 'chow') return group.tile.value === 1 || group.tile.value === 7;
   return false;
 };
+
+export const getAllTilesFromGrouping = (grouping: MahjongGroup[]): MahjongTile[] =>
+  grouping.flatMap(group => {
+    if (group.kind === 'chow' && typeof group.tile.value === 'number') {
+      return [
+        group.tile,
+        { type: group.tile.type, value: group.tile.value + 1 },
+        { type: group.tile.type, value: group.tile.value + 2 },
+      ];
+    }
+    return [group.tile];
+  });

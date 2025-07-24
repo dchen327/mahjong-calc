@@ -10,7 +10,7 @@ export type ExcludeValuesFromBaseArrayType<B extends string[], E extends (string
 >[];
 export type ManifestType = chrome.runtime.ManifestV3;
 
-export type TileType = 'circle' | 'bamboo' | 'wan' | 'wind' | 'dragon' | 'flower' | 'season' | 'blank';
+export type TileType = 'circle' | 'bamboo' | 'wan' | 'wind' | 'dragon' | 'flower' | 'season' | 'flipped';
 export type MahjongTile = { type: TileType; value: number | string };
 
 // Types for mahjong tile groups
