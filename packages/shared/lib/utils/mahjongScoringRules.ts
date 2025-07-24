@@ -346,6 +346,7 @@ export const outsideHand: MahjongScoringRule = {
 // Fully Concealed Hand - The hand has four concealed groups and is won by self-draw.
 export const fullyConcealedHand: MahjongScoringRule = {
   name: '25. Fully Concealed Hand',
+  excludes: ['9. Self-Drawn'],
   points: 4,
   evaluate: (grouping, gameState) => {
     // all non pair groups must be concealed (must be 4 groups too)

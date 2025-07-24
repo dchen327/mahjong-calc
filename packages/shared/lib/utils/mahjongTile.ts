@@ -86,7 +86,7 @@ export const isTerminalOrHonorPung = (
   const tile = group.tile;
   if (isWind(tile)) {
     // Exclude seat/prevalent wind
-    return tile.value !== seatWind && tile.value !== prevalentWind;
+    return toString(tile) !== seatWind && toString(tile) !== prevalentWind;
   }
   return isTerminal(tile);
 };

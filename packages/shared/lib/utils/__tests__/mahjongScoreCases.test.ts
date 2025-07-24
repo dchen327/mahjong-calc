@@ -111,7 +111,7 @@ const cases = [
   },
   {
     name: 'Test 4',
-    expected: 2,
+    expected: 8,
     state: {
       concealedTiles: [
         'bamboo-2',
@@ -255,14 +255,13 @@ const cases = [
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    // TODO: run all tests
-    if (name === 'Test 5') {
-      it.only(`returns ${expected} for ${name}`, () => {
-        expect(calculateMahjongScore(state)).toBe(expected);
-      });
-    }
-    // it.only(`returns ${expected} for ${name}`, () => {
-    //   expect(calculateMahjongScore(state)).toBe(expected);
-    // });
+    // if (name === 'Test 4') {
+    //   it.only(`returns ${expected} for ${name}`, () => {
+    //     expect(calculateMahjongScore(state)).toBe(expected);
+    //   });
+    // }
+    it.only(`returns ${expected} for ${name}`, () => {
+      expect(calculateMahjongScore(state)).toBe(expected);
+    });
   });
 });
