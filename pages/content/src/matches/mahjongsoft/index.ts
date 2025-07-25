@@ -198,3 +198,27 @@ if (!handElement) {
     if (table) observer.observe(table, observerConfig);
   });
 }
+
+// Subscribe to handScoreStorage changes
+handScoreStorage.subscribe(() => {
+  const currentScore = handScoreStorage.getSnapshot();
+
+  if (currentScore && currentScore.score > 0) {
+    const pointsInput = document.getElementById('points') as HTMLInputElement;
+    if (pointsInput) {
+      pointsInput.value = currentScore.score.toString();
+      // Dispatch input event to simulate user typing
+      pointsInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // Enable the check button
+      const checkButton = document.getElementById('check_button') as HTMLButtonElement;
+      if (checkButton) {
+        checkButton.disabled = false;
+      }
+
+      console.log(`[CEB] Updated points input with score: ${currentScore.score}`);
+    } else {
+      console.warn('[CEB] Points input element not found');
+    }
+  }
+});
