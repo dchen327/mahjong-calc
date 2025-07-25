@@ -195,6 +195,28 @@ const cases = [
     },
   },
   {
+    name: 'Pure Straight with Short Straight',
+    expected: 29,
+    state: {
+      concealedTiles: ['wind-west'],
+      declaredSets: [
+        ['bamboo-1', 'bamboo-2', 'bamboo-3'],
+        ['bamboo-4', 'bamboo-5', 'bamboo-6'],
+        ['bamboo-7', 'bamboo-8', 'bamboo-9'],
+        ['bamboo-4', 'bamboo-5', 'bamboo-6'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'west-east',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'west-east',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'wind-west',
+    },
+  },
+  {
     name: 'Test 1',
     expected: 8,
     state: {
@@ -458,7 +480,7 @@ const cases = [
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    // if (name === 'Knitted Straight') {
+    // if (name === 'Seven Pairs') {
     //   it.only(`returns ${expected} for ${name}`, () => {
     //     expect(calculateMahjongScore(state)).toBe(expected);
     //   });
