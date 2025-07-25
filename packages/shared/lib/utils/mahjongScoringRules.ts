@@ -44,17 +44,15 @@ export const mixedDoubleChow: MahjongScoringRule = {
   points: 1,
   evaluate: grouping => {
     const chows = getChows(grouping);
-    const used = new Set<number>();
+    const used = Array(chows.length).fill(false);
     let count = 0;
     for (let i = 0; i < chows.length; i++) {
-      if (used.has(i)) continue;
+      if (used[i]) continue;
       for (let j = i + 1; j < chows.length; j++) {
-        if (used.has(j)) continue;
-        if (isMixedChow(chows[i], chows[j])) {
-          used.add(i);
-          used.add(j);
+        if (!used[j] && isMixedChow(chows[i], chows[j])) {
+          used[i] = used[j] = true;
           count++;
-          break; // move to next i to avoid reuse
+          break;
         }
       }
     }
@@ -68,11 +66,15 @@ export const shortStraight: MahjongScoringRule = {
   points: 1,
   evaluate: grouping => {
     const chows = getChows(grouping);
+    const used = Array(chows.length).fill(false);
     let count = 0;
     for (let i = 0; i < chows.length; i++) {
+      if (used[i]) continue;
       for (let j = i + 1; j < chows.length; j++) {
-        if (isShortStraight(chows[i], chows[j])) {
+        if (!used[j] && isShortStraight(chows[i], chows[j])) {
+          used[i] = used[j] = true;
           count++;
+          break;
         }
       }
     }
@@ -86,11 +88,15 @@ export const twoTerminalChows: MahjongScoringRule = {
   points: 1,
   evaluate: grouping => {
     const chows = sortChows(getChows(grouping));
+    const used = Array(chows.length).fill(false);
     let count = 0;
     for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        if (chows[i].tile.type === chows[j].tile.type && chows[i].tile.value === 1 && chows[j].tile.value === 7) {
+      if (used[i] || chows[i].tile.value !== 1) continue;
+      for (let j = 0; j < chows.length; j++) {
+        if (i !== j && !used[j] && chows[j].tile.type === chows[i].tile.type && chows[j].tile.value === 7) {
+          used[i] = used[j] = true;
           count++;
+          break;
         }
       }
     }
@@ -242,6 +248,7 @@ export const seatWind: MahjongScoringRule = {
   },
 };
 
+// Concealed Hand - The hand has no melded sets and is won by discard.
 export const concealedHand: MahjongScoringRule = {
   name: '17. Concealed Hand',
   points: 2,
@@ -430,20 +437,29 @@ export const mixedShiftedChows: MahjongScoringRule = {
   points: 6,
   evaluate: grouping => {
     const chows = getChows(grouping);
-    // Check all unique triples of chows
+    const used = Array(chows.length).fill(false);
+    let count = 0;
     for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        for (let k = j + 1; k < chows.length; k++) {
+      if (used[i]) continue;
+      for (let j = 0; j < chows.length; j++) {
+        if (i === j || used[j]) continue;
+        for (let k = 0; k < chows.length; k++) {
+          if (i === k || j === k || used[k]) continue;
           const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
           const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort();
           const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           const isConsecutive = values[1] === values[0] + 1 && values[2] === values[1] + 1;
-          if (allDifferentSuits && isConsecutive) return 1;
+          if (allDifferentSuits && isConsecutive) {
+            used[i] = used[j] = used[k] = true;
+            count++;
+            break;
+          }
         }
+        if (used[i]) break;
       }
     }
-    return 0;
+    return count;
   },
 };
 

@@ -596,6 +596,26 @@ const cases = [
       winningTile: 'bamboo-7',
     },
   },
+  {
+    name: 'Test 16',
+    expected: 9,
+    state: {
+      concealedTiles: ['wan-6', 'wan-7', 'wan-8', 'circle-1', 'circle-2', 'circle-3', 'circle-3'],
+      declaredSets: [
+        ['circle-1', 'circle-2', 'circle-3'],
+        ['circle-4', 'circle-5', 'circle-6'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'circle-3',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {

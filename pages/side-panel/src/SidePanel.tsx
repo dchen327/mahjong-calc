@@ -8,6 +8,7 @@ const SidePanel = () => {
   const gameState = useStorage(mahjongGameStateStorage);
   const handScoreResult = useStorage(handScoreStorage);
   const handScore = handScoreResult.score;
+  const matchedDec = [...handScoreResult.matched].reverse();
 
   return (
     <div className={cn('App', isLight ? 'bg-slate-50' : 'bg-gray-800')}>
@@ -30,7 +31,7 @@ const SidePanel = () => {
                 </tr>
               </thead>
               <tbody>
-                {handScoreResult.matched.map(({ name, points, quant }, idx) => (
+                {matchedDec.map(({ name, points, quant }, idx) => (
                   <tr key={idx}>
                     <td style={{ borderBottom: '1px solid #eee', padding: '4px' }}>{name}</td>
                     <td style={{ borderBottom: '1px solid #eee', padding: '4px' }}>{quant}</td>
