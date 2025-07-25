@@ -44,11 +44,17 @@ export const mixedDoubleChow: MahjongScoringRule = {
   points: 1,
   evaluate: grouping => {
     const chows = getChows(grouping);
+    const used = new Set<number>();
     let count = 0;
     for (let i = 0; i < chows.length; i++) {
+      if (used.has(i)) continue;
       for (let j = i + 1; j < chows.length; j++) {
+        if (used.has(j)) continue;
         if (isMixedChow(chows[i], chows[j])) {
+          used.add(i);
+          used.add(j);
           count++;
+          break; // move to next i to avoid reuse
         }
       }
     }
@@ -475,7 +481,6 @@ export const twoDragonPungs: MahjongScoringRule = {
   },
 };
 
-// 8 point rules
 // Mixed Straight - A Chow of 1,2,3, a Chow of 4,5,6 and a Chow of 7,8,9 in three different suits.
 export const mixedStraight: MahjongScoringRule = {
   name: '34. Mixed Straight',
@@ -635,6 +640,14 @@ export const knittedStraight: MahjongScoringRule = {
   name: '45. Knitted Straight',
   points: 12,
   evaluate: grouping => {
+    // Check if there is knitted-and-honors group
+    if (grouping.length === 1 && grouping[0].kind === 'knitted-and-honors') {
+      const allTiles = getAllTilesFromGrouping(grouping);
+      // Ensure all values from 1-9 are present
+      const values = allTiles.map(tile => tile.value).filter(value => typeof value === 'number');
+      if (values.length === 9 && new Set(values).size === 9) return 1;
+    }
+
     const knitted = getKnitted(grouping);
     if (knitted.length !== 3) return 0;
     const [k1, k2, k3] = knitted;

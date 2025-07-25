@@ -53,7 +53,6 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   const declaredGroups: MahjongGroup[] = declaredSets
     .map(set => parseDeclaredSet(set.map(parseTile)))
     .filter(Boolean) as MahjongGroup[];
-  console.log(declaredGroups);
 
   // non declared is concealedTiles + winningTile
   const nonDeclaredTiles = [...concealedTiles, winningTile];
@@ -259,10 +258,6 @@ const scoreGrouping = (
   gameState: MahjongGameState,
 ): { score: number; matched: { rule: MahjongScoringRule; quant: number }[] } => {
   let score = 0;
-  const nameHeader = 'Name'.padEnd(30);
-  const quantHeader = 'Quantity'.padEnd(8);
-  const pointsHeader = 'Points'.padEnd(8);
-  console.log(`${nameHeader} ${quantHeader} ${pointsHeader}`);
 
   // First pass: collect all matched rules
   const matched = mahjongScoringRules
@@ -294,13 +289,7 @@ const scoreGrouping = (
   if (final.length === 0) final.push({ rule: { name: '43. Chicken Hand', points: 8, evaluate: () => 8 }, quant: 1 });
 
   // Print and sum
-  final.reverse().forEach(({ rule, quant }) => {
-    const nameCol = (rule.name + ' '.repeat(30)).slice(0, 30);
-    const quantCol = `x${quant}`.padEnd(8);
-    const pointsCol = `${rule.points} pts`.padEnd(8);
-    console.log(`${nameCol} ${quantCol} ${pointsCol}`);
-    score += rule.points * quant;
-  });
+  score = final.reduce((sum, { rule, quant }) => sum + rule.points * quant, 0);
 
   return { score, matched: final };
 };

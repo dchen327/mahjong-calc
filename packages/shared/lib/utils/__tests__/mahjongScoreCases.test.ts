@@ -496,18 +496,38 @@ const cases = [
       winningTile: 'wan-7',
     },
   },
+  {
+    name: 'Test 12',
+    expected: 18,
+    state: {
+      concealedTiles: ['wan-7', 'wan-8', 'wan-7', 'wan-8', 'wan-9', 'circle-6', 'circle-6'],
+      declaredSets: [
+        ['wan-6', 'wan-7', 'wan-8'],
+        ['circle-6', 'circle-7', 'circle-8'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wan-6',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    if (name === 'Test 11') {
-      it.only(`returns ${expected} for ${name}`, () => {
-        expect(calculateMahjongScore(state)).toBe(expected);
-      });
-    }
-    return;
+    // if (name === 'Test 11') {
+    //   it.only(`returns ${expected} for ${name}`, () => {
+    //     expect(calculateMahjongScore(state).score).toBe(expected);
+    //   });
+    // }
+    // return;
     it.only(`returns ${expected} for ${name}`, () => {
-      expect(calculateMahjongScore(state)).toBe(expected);
+      expect(calculateMahjongScore(state).score).toBe(expected);
     });
   });
 });
