@@ -309,6 +309,9 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
 
 export const calculateMahjongScore = (gameState: MahjongGameState): HandScoreResult => {
   const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
+  if (results.length === 0) {
+    return { score: 0, matched: [] };
+  }
   // Find the result with the maximum score
   const maxResult = results.reduce((max, curr) => (curr.score > max.score ? curr : max), results[0]);
   const matched: HandScoreRuleSummary[] = maxResult.matched.map(({ rule, quant }) => ({

@@ -565,6 +565,37 @@ const cases = [
       winningTile: 'wan-7',
     },
   },
+  {
+    name: 'Test 15',
+    expected: 29,
+    state: {
+      concealedTiles: [
+        'bamboo-1',
+        'bamboo-1',
+        'circle-3',
+        'circle-3',
+        'bamboo-8',
+        'bamboo-8',
+        'wan-7',
+        'wan-7',
+        'bamboo-7',
+        'bamboo-5',
+        'bamboo-5',
+        'wan-8',
+        'wan-8',
+      ],
+      declaredSets: [],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'bamboo-7',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {
