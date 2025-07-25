@@ -516,18 +516,66 @@ const cases = [
       winningTile: 'wan-6',
     },
   },
+  {
+    name: 'Test 13',
+    expected: 24,
+    state: {
+      concealedTiles: [
+        'bamboo-3',
+        'bamboo-3',
+        'bamboo-3',
+        'wan-9',
+        'wan-9',
+        'wan-9',
+        'bamboo-6',
+        'bamboo-6',
+        'bamboo-6',
+        'bamboo-2',
+      ],
+      declaredSets: [['circle-7', 'circle-7', 'circle-7']],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'bamboo-2',
+    },
+  },
+  {
+    name: 'Test 14',
+    expected: 14,
+    state: {
+      concealedTiles: ['wan-8', 'wan-9', 'wan-8', 'wan-8'],
+      declaredSets: [
+        ['circle-1', 'circle-2', 'circle-3'],
+        ['flipped', 'bamboo-8', 'bamboo-8', 'flipped'],
+        ['flipped', 'wind-west', 'wind-west', 'flipped'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: true,
+      prevalentWind: 'wind-north',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'wind-east',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wan-7',
+    },
+  },
 ];
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    // if (name === 'Test 11') {
-    //   it.only(`returns ${expected} for ${name}`, () => {
-    //     expect(calculateMahjongScore(state).score).toBe(expected);
-    //   });
-    // }
-    // return;
     it.only(`returns ${expected} for ${name}`, () => {
-      expect(calculateMahjongScore(state).score).toBe(expected);
+      const result = calculateMahjongScore(state);
+      if (result.score !== expected) {
+        // Print matched rules for debugging
+        console.log('Matched rules:', result.matched);
+      }
+      expect(result.score).toBe(expected);
     });
   });
 });

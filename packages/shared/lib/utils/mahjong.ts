@@ -176,8 +176,8 @@ const checkKnittedTilesAndUnpairedHonors = (tiles: MahjongTile[]): MahjongGroup[
 
 const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): MahjongGroup[][] => {
   const results: MahjongGroup[][] = [];
-  const winningTileIdx = tiles.findIndex(t => isSameTile([t, winningTile]));
   tiles.sort(compareTiles);
+  const winningTileIdx = tiles.findIndex(t => isSameTile([t, winningTile]));
   const seen = new Set<string>();
   const serializeGrouping = (groups: MahjongGroup[]) =>
     groups
@@ -208,6 +208,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
         const containsWinning = groupIndices.includes(winningTileIdx);
         const next = remaining.filter((_, idx) => ![i, i + 1, i + 2].includes(idx));
         const nextIndices = remainingIndices.filter((_, idx) => ![i, i + 1, i + 2].includes(idx));
+
         search(next, nextIndices, [
           ...currentGroups,
           { kind: 'pung', tile: remaining[i], concealed: !containsWinning },
