@@ -371,7 +371,7 @@ export const twoMeldedKongs: MahjongScoringRule = {
   points: 4,
   excludes: ['6. Melded Kong'],
   evaluate: grouping => {
-    const meldedKongs = getKongs(grouping).filter(kong => !kong.concealed);
+    const meldedKongs = getKongs(grouping);
     return meldedKongs.length >= 2 ? 1 : 0;
   },
 };

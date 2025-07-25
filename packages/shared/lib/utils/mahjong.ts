@@ -1,5 +1,6 @@
 import { mahjongScoringRules } from './mahjongScoringRules.js';
 import { compareTiles, isHonor, isKnitted, isSameTile, isSequential, parseTile, toString } from './mahjongTile.js';
+import type { HandScoreResult, HandScoreRuleSummary } from '@extension/storage';
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
 import type { MahjongGroup, MahjongScoringRule, MahjongTile } from 'index.mjs';
 
@@ -52,6 +53,7 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   const declaredGroups: MahjongGroup[] = declaredSets
     .map(set => parseDeclaredSet(set.map(parseTile)))
     .filter(Boolean) as MahjongGroup[];
+  console.log(declaredGroups);
 
   // non declared is concealedTiles + winningTile
   const nonDeclaredTiles = [...concealedTiles, winningTile];
@@ -315,7 +317,14 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
   return waits;
 });
 
-export const calculateMahjongScore = (gameState: MahjongGameState): number => {
+export const calculateMahjongScore = (gameState: MahjongGameState): HandScoreResult => {
   const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
-  return Math.max(...results.map(r => r.score));
+  // Find the result with the maximum score
+  const maxResult = results.reduce((max, curr) => (curr.score > max.score ? curr : max), results[0]);
+  const matched: HandScoreRuleSummary[] = maxResult.matched.map(({ rule, quant }) => ({
+    name: rule.name,
+    points: rule.points,
+    quant,
+  }));
+  return { score: maxResult.score, matched };
 };

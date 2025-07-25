@@ -186,8 +186,10 @@ if (!handElement) {
 
     if (hasChanged) {
       mahjongGameStateStorage.updateGameState(newGameState);
-      // Updated state invalidates previous hand score, set to 0
-      handScoreStorage.updateScore(0).catch(error => console.error('Failed to reset hand score:', error));
+      // Updated state invalidates previous hand score, set to { score: 0, matched: [] }
+      handScoreStorage
+        .updateScore({ score: 0, matched: [] })
+        .catch(error => console.error('Failed to reset hand score:', error));
       lastGameState = newGameState;
     }
   });

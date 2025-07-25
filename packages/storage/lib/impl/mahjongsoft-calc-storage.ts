@@ -20,10 +20,26 @@ const mahjongGameStorage = createStorage<MahjongGameState>('mahjong-game-storage
   liveUpdate: true,
 });
 
-const _handScoreStorage = createStorage<number>('mahjong-hand-score', 0, {
-  storageEnum: StorageEnum.Local,
-  liveUpdate: true,
-});
+// Change handScoreStorage to store both score and matched rules
+const _handScoreStorage = createStorage<HandScoreResult>(
+  'mahjong-hand-score',
+  { score: 0, matched: [] },
+  {
+    storageEnum: StorageEnum.Local,
+    liveUpdate: true,
+  },
+);
+
+export type HandScoreRuleSummary = {
+  name: string;
+  points: number;
+  quant: number;
+};
+
+export type HandScoreResult = {
+  score: number;
+  matched: HandScoreRuleSummary[];
+};
 
 export const mahjongGameStateStorage: MahjongGameStorageType = {
   ...mahjongGameStorage,
@@ -37,7 +53,7 @@ export const mahjongGameStateStorage: MahjongGameStorageType = {
 
 export const handScoreStorage = {
   ..._handScoreStorage,
-  updateScore: async (score: number) => {
-    await _handScoreStorage.set(() => score);
+  updateScore: async (result: HandScoreResult) => {
+    await _handScoreStorage.set(() => result);
   },
 };

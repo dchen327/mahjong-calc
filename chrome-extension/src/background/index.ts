@@ -30,8 +30,8 @@ mahjongGameStateStorage.subscribe(() => {
     console.warn('No current Mahjong game state found.');
     return;
   }
-  const score = calculateMahjongScore(currentGameState);
-  handScoreStorage.updateScore(score).catch(error => console.error('Failed to update hand score:', error));
+  const handScoreResult = calculateMahjongScore(currentGameState);
+  handScoreStorage.updateScore(handScoreResult).catch(error => console.error('Failed to update hand score:', error));
 });
 
 console.log('Background loaded');
