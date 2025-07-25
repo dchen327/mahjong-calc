@@ -69,7 +69,10 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
 
   // For each suit/type, get all possible groupings
   const suitGroupings: MahjongGroup[][][] = Object.values(groupedNonDeclared).map(tileList =>
-    findAllSuitGroupings(tileList),
+    findAllSuitGroupings(
+      tileList,
+      gameState.winFromDiscard ? parseTile(winningTile) : ({ type: 'flipped', value: 0 } as MahjongTile),
+    ),
   );
 
   // Cartesian product of all suit groupings
@@ -170,22 +173,24 @@ const checkKnittedTilesAndUnpairedHonors = (tiles: MahjongTile[]): MahjongGroup[
   return [];
 };
 
-const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
+const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): MahjongGroup[][] => {
   const results: MahjongGroup[][] = [];
+  const winningTileIdx = tiles.findIndex(t => isSameTile([t, winningTile]));
   tiles.sort(compareTiles);
   const seen = new Set<string>();
   const serializeGrouping = (groups: MahjongGroup[]) =>
     groups
       .map(g => {
-        if (g.kind === 'chow' || g.kind === 'pung' || g.kind === 'pair') {
-          return `${g.kind}:${g.tile.type}-${g.tile.value}`;
+        let base = `${g.kind}:${g.tile.type}-${g.tile.value}`;
+        if ('concealed' in g) {
+          base += `:concealed=${g.concealed}`;
         }
-        return `${g.kind}`;
+        return base;
       })
       .sort()
       .join('|');
 
-  const search = (remaining: MahjongTile[], currentGroups: MahjongGroup[]) => {
+  const search = (remaining: MahjongTile[], remainingIndices: number[], currentGroups: MahjongGroup[]) => {
     if (remaining.length === 0) {
       const key = serializeGrouping(currentGroups);
       if (!seen.has(key)) {
@@ -198,9 +203,14 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
     // Try all possible pungs (only check sorted, consecutive tiles)
     for (let i = 0; i < remaining.length - 2; i++) {
       if (isSameTile([remaining[i], remaining[i + 1], remaining[i + 2]])) {
-        // Remove these three tiles by index
-        const next = remaining.filter((_, idx) => idx !== i && idx !== i + 1 && idx !== i + 2);
-        search(next, [...currentGroups, { kind: 'pung', tile: remaining[i], concealed: true }]);
+        const groupIndices = [i, i + 1, i + 2].map(idx => remainingIndices[idx]);
+        const containsWinning = groupIndices.includes(winningTileIdx);
+        const next = remaining.filter((_, idx) => ![i, i + 1, i + 2].includes(idx));
+        const nextIndices = remainingIndices.filter((_, idx) => ![i, i + 1, i + 2].includes(idx));
+        search(next, nextIndices, [
+          ...currentGroups,
+          { kind: 'pung', tile: remaining[i], concealed: !containsWinning },
+        ]);
       }
     }
 
@@ -208,28 +218,35 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
     for (let i = 0; i < remaining.length - 1; i++) {
       if (isSameTile([remaining[i], remaining[i + 1]])) {
         const next = remaining.filter((_, idx) => idx !== i && idx !== i + 1);
-        search(next, [...currentGroups, { kind: 'pair', tile: remaining[i] }]);
+        const nextIndices = remainingIndices.filter((_, idx) => idx !== i && idx !== i + 1);
+        search(next, nextIndices, [...currentGroups, { kind: 'pair', tile: remaining[i] }]);
       }
     }
+
     // Try all possible chows and knitted groups
     for (let i = 0; i < remaining.length; i++) {
       for (let j = i + 1; j < remaining.length; j++) {
         for (let k = j + 1; k < remaining.length; k++) {
           const trio = [remaining[i], remaining[j], remaining[k]];
           if (isSequential(trio)) {
+            const groupIndices = [i, j, k].map(idx => remainingIndices[idx]);
+            const containsWinning = groupIndices.includes(winningTileIdx);
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-            search(next, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: true }]);
+            const nextIndices = remainingIndices.filter((_, idx) => idx !== i && idx !== j && idx !== k);
+            search(next, nextIndices, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: !containsWinning }]);
           }
           if (isKnitted(trio)) {
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-            search(next, [...currentGroups, { kind: 'knitted', tile: trio[0], concealed: true }]);
+            const nextIndices = remainingIndices.filter((_, idx) => idx !== i && idx !== j && idx !== k);
+            search(next, nextIndices, [...currentGroups, { kind: 'knitted', tile: trio[0], concealed: true }]);
           }
         }
       }
     }
   };
 
-  search(tiles, []);
+  const originalIndices = tiles.map((_, idx) => idx);
+  search(tiles, originalIndices, []);
   // console.log(`Found ${results.length} groupings for ${tiles.map(t => `${t.type}-${t.value}`).join(', ')}`);
   return results;
 };

@@ -236,12 +236,23 @@ export const seatWind: MahjongScoringRule = {
   },
 };
 
-// Concealed Hand - The hand has no melded sets and is won by discard.
 export const concealedHand: MahjongScoringRule = {
   name: '17. Concealed Hand',
   points: 2,
-  evaluate: (grouping, gameState) =>
-    grouping.filter(group => group.kind !== 'pair').every(group => group.concealed) && gameState.winFromDiscard ? 1 : 0,
+  evaluate: (grouping, gameState) => {
+    const winningTile = parseTile(gameState.winningTile);
+    return grouping
+      .filter(group => group.kind !== 'pair')
+      .every(group => {
+        if (!group.concealed) {
+          // If not concealed, must contain the winning tile
+          return isSameTile([group.tile, winningTile]);
+        }
+        return true;
+      }) && gameState.winFromDiscard
+      ? 1
+      : 0;
+  },
 };
 
 // All Chows - The hand has four Chows and no Honors.
@@ -440,7 +451,15 @@ export const meldedHand: MahjongScoringRule = {
   excludes: ['13. Pair Wait'],
   evaluate: (grouping, gameState) => {
     const meldedGroups = grouping.filter(group => group.kind !== 'pair' && !group.concealed);
-    return meldedGroups.length === 4 && gameState.winFromDiscard ? 1 : 0;
+    const pairs = getPairs(grouping);
+    const winningTile = parseTile(gameState.winningTile);
+    // Ensure there is exactly one pair and the winning tile matches the pair
+    return meldedGroups.length === 4 &&
+      gameState.winFromDiscard &&
+      pairs.length === 1 &&
+      isSameTile([pairs[0].tile, winningTile])
+      ? 1
+      : 0;
   },
 };
 

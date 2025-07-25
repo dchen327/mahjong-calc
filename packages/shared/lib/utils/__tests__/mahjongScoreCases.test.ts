@@ -480,11 +480,12 @@ const cases = [
 
 describe('calculateMahjongScore (cases)', () => {
   cases.forEach(({ name, state, expected }) => {
-    // if (name === 'Seven Pairs') {
+    // if (name === 'Test 9') {
     //   it.only(`returns ${expected} for ${name}`, () => {
     //     expect(calculateMahjongScore(state)).toBe(expected);
     //   });
     // }
+    // return;
     it.only(`returns ${expected} for ${name}`, () => {
       expect(calculateMahjongScore(state)).toBe(expected);
     });
