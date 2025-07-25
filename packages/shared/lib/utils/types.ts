@@ -16,7 +16,8 @@ export type MahjongTile = { type: TileType; value: number | string };
 // Types for mahjong tile groups
 export interface BaseGroup {
   kind: string;
-  tile: MahjongTile;
+  tile?: MahjongTile;
+  concealed?: boolean;
 }
 
 // Chow group, store first tile in sequence
@@ -46,8 +47,21 @@ export interface PairGroup extends BaseGroup {
   tile: MahjongTile;
 }
 
+// Knitted group: 147, 258, 369, store first tile in sequence
+export interface KnittedGroup extends BaseGroup {
+  kind: 'knitted';
+  tile: MahjongTile;
+}
+
+// Special, for storing entire hand of knitted tiles and unpaired honors
+export interface KnittedTilesAndUnpairedHonors extends BaseGroup {
+  kind: 'knitted-and-honors';
+  tile: MahjongTile;
+  tiles: MahjongTile[];
+}
+
 // Union type for all groups
-export type MahjongGroup = ChowGroup | PungGroup | KongGroup | PairGroup;
+export type MahjongGroup = ChowGroup | PungGroup | KongGroup | PairGroup | KnittedGroup | KnittedTilesAndUnpairedHonors;
 
 export interface MahjongScoringRule {
   name: string;

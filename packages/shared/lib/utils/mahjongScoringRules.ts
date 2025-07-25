@@ -15,6 +15,7 @@ import {
   toString,
   isTerminalOrHonorGroup,
   getAllTilesFromGrouping,
+  getKnitted,
 } from './mahjongTile.js';
 import type { MahjongScoringRule, TileType } from './types.js';
 
@@ -123,7 +124,8 @@ export const oneVoidedSuit: MahjongScoringRule = {
   name: '7. One Voided Suit',
   points: 1,
   evaluate: grouping => {
-    const suits = new Set(grouping.map(group => group.tile.type));
+    const allTiles = getAllTilesFromGrouping(grouping);
+    const suits = new Set(allTiles.map(tile => tile.type));
     const allSuits: TileType[] = ['bamboo', 'wan', 'circle'];
     const missing = allSuits.filter(suit => !suits.has(suit));
     return missing.length;
@@ -134,9 +136,11 @@ export const oneVoidedSuit: MahjongScoringRule = {
 export const noHonorTiles: MahjongScoringRule = {
   name: '8. No Honor Tiles',
   points: 1,
-  evaluate: grouping => (grouping.some(group => isHonor(group.tile)) ? 0 : 1),
+  evaluate: grouping => {
+    const allTiles = getAllTilesFromGrouping(grouping);
+    return allTiles.some(tile => isHonor(tile)) ? 0 : 1;
+  },
 };
-
 // Self Drawn - The player wins by drawing the winning tile.
 export const selfDrawn: MahjongScoringRule = {
   name: '9. Self Drawn',
@@ -342,6 +346,8 @@ export const fullyConcealedHand: MahjongScoringRule = {
   excludes: ['9. Self Drawn'],
   points: 4,
   evaluate: (grouping, gameState) => {
+    // special case for knitted
+    if (grouping.length === 1 && grouping[0].kind === 'knitted-and-honors' && gameState.winFromWall) return 1;
     // all non pair groups must be concealed (must be 4 groups too)
     const concealedGroups = grouping.filter(group => group.kind !== 'pair' && group.concealed);
     return concealedGroups.length === 4 && gameState.winFromWall ? 1 : 0;
@@ -385,7 +391,8 @@ export const halfFlush: MahjongScoringRule = {
   points: 6,
   excludes: ['7. One Voided Suit'],
   evaluate: grouping => {
-    const suits = new Set(grouping.map(group => group.tile.type));
+    const allTiles = getAllTilesFromGrouping(grouping);
+    const suits = new Set(allTiles.map(tile => tile.type));
     const hasHonors = grouping.some(group => isHonor(group.tile));
     const allSuits: TileType[] = ['bamboo', 'wan', 'circle'];
     const missing = allSuits.filter(suit => !suits.has(suit));
@@ -595,6 +602,80 @@ export const robbingTheKong: MahjongScoringRule = {
 // Chicken Hand - Winning with a hand that would otherwise be worth 0 points other than flowers
 // This is checked in mahjong.ts after checking all other rules
 
+// 12 point rules
+// Lesser Honors and Knitted Tiles - The hand is entirely composed of single (unpaired) honors and single tiles from different knitted sequences. If this rule is satisfied, the player can win without the standard 4 triples and a pair.
+export const lesserHonorsAndKnittedTiles: MahjongScoringRule = {
+  name: '44. Lesser Honors and Knitted Tiles',
+  points: 12,
+  excludes: ['17. Concealed Hand', '31. All Types'],
+  evaluate: grouping => (grouping.length !== 1 || grouping[0].kind !== 'knitted-and-honors' ? 0 : 1),
+};
+
+// Knitted Straight - Winning with a hand that has 1,4,7 in one suit, 2,5,8 in a second suit and 3,6,9 in the third suit. This knitted straight is considered to be 3 Chows for the requirement of 4 triples and a pair.
+export const knittedStraight: MahjongScoringRule = {
+  name: '45. Knitted Straight',
+  points: 12,
+  evaluate: grouping => {
+    const knitted = getKnitted(grouping);
+    if (knitted.length !== 3) return 0;
+    const [k1, k2, k3] = knitted;
+    const values = [k1.tile.value, k2.tile.value, k3.tile.value].map(Number).sort();
+    const suits = [k1.tile.type, k2.tile.type, k3.tile.type];
+    const allDifferentSuits = new Set(suits).size === 3;
+    const isConsecutive = values[0] === 1 && values[1] === 2 && values[2] === 3;
+    return allDifferentSuits && isConsecutive ? 1 : 0;
+  },
+};
+
+// Upper Four - The hand is composed of only suit tiles with numerical values of 6 or greater.
+export const upperFour: MahjongScoringRule = {
+  name: '46. Upper Four',
+  points: 12,
+  excludes: ['8. No Honor Tiles'],
+  evaluate: grouping => {
+    const allTiles = getAllTilesFromGrouping(grouping);
+    return allTiles.every(tile => typeof tile.value === 'number' && tile.value >= 6) ? 1 : 0;
+  },
+};
+
+// Lower Four - The hand is composed of only suit tiles with numerical values of 4 or less.
+export const lowerFour: MahjongScoringRule = {
+  name: '47. Lower Four',
+  points: 12,
+  excludes: ['8. No Honor Tiles'],
+  evaluate: grouping => {
+    const allTiles = getAllTilesFromGrouping(grouping);
+    return allTiles.every(tile => typeof tile.value === 'number' && tile.value <= 4) ? 1 : 0;
+  },
+};
+
+// Big Three Winds - Three Pungs or Kongs of Winds.
+// Does not combine with:
+// Pung of Terminals or Honors (Unless you have an additional non-wind Pung)
+export const bigThreeWinds: MahjongScoringRule = {
+  name: '48. Big Three Winds',
+  points: 12,
+  excludes: ['5. Pung of Terminals or Honors'],
+  evaluate: grouping => {
+    const pungs = getPungs(grouping).filter(pung => pung.tile.type === 'wind');
+    const kongs = getKongs(grouping).filter(kong => kong.tile.type === 'wind');
+    const total = pungs.length + kongs.length;
+    return total == 3 ? 1 : 0;
+  },
+};
+
+export const greaterHonorsAndKnittedTiles: MahjongScoringRule = {
+  name: '56. Greater Honors and Knitted Tiles',
+  points: 24,
+  excludes: ['17. Concealed Hand', '31. All Types', '44. Lesser Honors and Knitted Tiles'],
+  evaluate: grouping =>
+    grouping.length === 1 &&
+    grouping[0].kind === 'knitted-and-honors' &&
+    getAllTilesFromGrouping(grouping).filter(isHonor).length === 7
+      ? 1
+      : 0,
+};
+
 export const mahjongScoringRules: MahjongScoringRule[] = [
   pureDoubleChow, // 1 point
   mixedDoubleChow,
@@ -637,4 +718,10 @@ export const mahjongScoringRules: MahjongScoringRule[] = [
   lastTileClaim,
   outWithReplacementTile,
   robbingTheKong,
+  lesserHonorsAndKnittedTiles, // 12 points
+  knittedStraight,
+  upperFour,
+  lowerFour,
+  bigThreeWinds,
+  greaterHonorsAndKnittedTiles,
 ];

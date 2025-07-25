@@ -1,4 +1,13 @@
-import type { ChowGroup, KongGroup, MahjongGroup, MahjongTile, PairGroup, PungGroup, TileType } from './types.js';
+import type {
+  ChowGroup,
+  KnittedGroup,
+  KongGroup,
+  MahjongGroup,
+  MahjongTile,
+  PairGroup,
+  PungGroup,
+  TileType,
+} from './types.js';
 
 const tileTypeOrder: TileType[] = ['bamboo', 'wan', 'circle', 'wind', 'dragon', 'flower', 'season'];
 
@@ -53,11 +62,22 @@ export const isSequential = (tiles: MahjongTile[]): boolean => {
   return values[1] === values[0] + 1 && values[2] === values[1] + 1;
 };
 
+export const isKnitted = (tiles: MahjongTile[]): boolean => {
+  if (tiles.length !== 3) return false;
+  if (tiles.some(isHonor)) return false;
+  const [a, b, c] = tiles;
+  if (a.type !== b.type || b.type !== c.type) return false;
+  if (typeof a.value !== 'number' || typeof b.value !== 'number' || typeof c.value !== 'number') return false;
+  const values = [a.value, b.value, c.value].sort((x, y) => x - y);
+  return values[1] === values[0] + 3 && values[2] === values[1] + 3;
+};
+
 // Group related functions
 export const getChows = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'chow') as ChowGroup[];
 export const getPungs = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'pung') as PungGroup[];
 export const getKongs = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'kong') as KongGroup[];
 export const getPairs = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'pair') as PairGroup[];
+export const getKnitted = (groups: MahjongGroup[]) => groups.filter(g => g.kind === 'knitted') as KnittedGroup[];
 
 export const sortChows = (chows: ChowGroup[]): ChowGroup[] =>
   chows.slice().sort((a, b) => {
@@ -107,6 +127,6 @@ export const getAllTilesFromGrouping = (grouping: MahjongGroup[]): MahjongTile[]
         { type: group.tile.type, value: group.tile.value + 1 },
         { type: group.tile.type, value: group.tile.value + 2 },
       ];
-    }
+    } else if (group.kind === 'knitted-and-honors') return group.tiles;
     return [group.tile];
   });

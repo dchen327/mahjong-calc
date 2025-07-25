@@ -1,7 +1,7 @@
 import { mahjongScoringRules } from './mahjongScoringRules.js';
-import { compareTiles, isSameTile, isSequential, parseTile } from './mahjongTile.js';
+import { compareTiles, isHonor, isKnitted, isSameTile, isSequential, parseTile, toString } from './mahjongTile.js';
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
-import type { MahjongGroup, MahjongTile } from 'index.mjs';
+import type { MahjongGroup, MahjongScoringRule, MahjongTile } from 'index.mjs';
 
 const allPlayableTiles = [
   'bamboo-1',
@@ -78,6 +78,12 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   // Add declared groups to each combination
   const finalGroupings = allCombinations.map(groups => [...declaredGroups, ...groups.flat()]);
 
+  if (finalGroupings.length === 0) {
+    // check for knitted tiles and unpaired honors
+    const knittedGrooping = checkKnittedTilesAndUnpairedHonors(nonDeclaredTiles.map(t => parseTile(t)));
+    if (knittedGrooping.length > 0) finalGroupings.push(knittedGrooping);
+  }
+
   return finalGroupings;
 };
 
@@ -106,6 +112,62 @@ const memoize = <Args extends unknown[], R>(fn: (...args: Args) => R): ((...args
     cache.set(key, result);
     return result;
   };
+};
+
+const checkKnittedTilesAndUnpairedHonors = (tiles: MahjongTile[]): MahjongGroup[] => {
+  // Check that all tiles are unpaired and length is 14
+  const tileStrs = tiles.map(t => toString(t));
+  if (tiles.length !== 14 || new Set(tileStrs).size !== tiles.length) return [];
+  // Knitted sequences are singles of 1,4,7 in one suit, 2,5,8 in a second suit and 3,6,9 in the third suit.
+  // Collect suited tiles
+  const suits = ['circle', 'bamboo', 'wan'] as const;
+  type SuitType = (typeof suits)[number];
+  const suitedTiles: Record<SuitType, MahjongTile[]> = {
+    circle: [],
+    bamboo: [],
+    wan: [],
+  };
+  tiles.forEach(tile => {
+    if (suits.includes(tile.type as SuitType)) {
+      suitedTiles[tile.type as SuitType].push(tile);
+    }
+  });
+
+  const knittedGroups = [
+    [1, 4, 7],
+    [2, 5, 8],
+    [3, 6, 9],
+  ];
+
+  const presentKnittedGroupIdxs = []; // we want 0,1,2 present
+
+  // Check for knitted sequences
+  for (const suit of suits) {
+    const suitTiles = suitedTiles[suit];
+
+    // Loop through knittedGroups with index
+    for (let i = 0; i < knittedGroups.length; i++) {
+      const knittedGroup = knittedGroups[i];
+      // check if suitTiles is subset of knitted group
+      if (suitTiles.every(tile => typeof tile.value === 'number' && knittedGroup.includes(tile.value))) {
+        presentKnittedGroupIdxs.push(i);
+      }
+    }
+  }
+
+  if (presentKnittedGroupIdxs.sort().toString() === '0,1,2') {
+    // We have a knitted group, return it
+    return [
+      {
+        kind: 'knitted-and-honors',
+        tile: tiles[0],
+        tiles,
+        concealed: true,
+      },
+    ];
+  }
+
+  return [];
 };
 
 const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
@@ -149,7 +211,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
         search(next, [...currentGroups, { kind: 'pair', tile: remaining[i] }]);
       }
     }
-    // Try all possible chows (i < j < k)
+    // Try all possible chows and knitted groups
     for (let i = 0; i < remaining.length; i++) {
       for (let j = i + 1; j < remaining.length; j++) {
         for (let k = j + 1; k < remaining.length; k++) {
@@ -157,6 +219,10 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
           if (isSequential(trio)) {
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
             search(next, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: true }]);
+          }
+          if (isKnitted(trio)) {
+            const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
+            search(next, [...currentGroups, { kind: 'knitted', tile: trio[0], concealed: true }]);
           }
         }
       }
@@ -169,7 +235,10 @@ const findAllSuitGroupings = (tiles: MahjongTile[]): MahjongGroup[][] => {
 };
 
 // Score a single grouping using all rules
-const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): number => {
+const scoreGrouping = (
+  grouping: MahjongGroup[],
+  gameState: MahjongGameState,
+): { score: number; matched: { rule: MahjongScoringRule; quant: number }[] } => {
   let score = 0;
   const nameHeader = 'Name'.padEnd(30);
   const quantHeader = 'Quantity'.padEnd(8);
@@ -189,6 +258,19 @@ const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): n
     m => !matched.some(other => other !== m && other.rule.excludes && other.rule.excludes.includes(m.rule.name)),
   );
 
+  // Edge cases
+  // If 48. Big Three Winds, check for pung of terminals and add back
+  if (final.some(m => m.rule.name === '48. Big Three Winds')) {
+    const hasTerminalPung = grouping.some(
+      g => (g.kind === 'pung' || g.kind === 'kong') && !isHonor(g.tile) && (g.tile.value === 1 || g.tile.value === 9),
+    );
+    if (hasTerminalPung) {
+      // Add pungOfTerminalsOrHonors back in
+      const rule = mahjongScoringRules.find(r => r.name === '5. Pung of Terminals or Honors');
+      if (rule) final.push({ rule, quant: 1 });
+    }
+  }
+
   // If no rules matched, add 43. Chicken Hand x1
   if (final.length === 0) final.push({ rule: { name: '43. Chicken Hand', points: 8, evaluate: () => 8 }, quant: 1 });
 
@@ -201,7 +283,7 @@ const scoreGrouping = (grouping: MahjongGroup[], gameState: MahjongGameState): n
     score += rule.points * quant;
   });
 
-  return score;
+  return { score, matched: final };
 };
 
 export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[] => {
@@ -217,7 +299,6 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
 });
 
 export const calculateMahjongScore = (gameState: MahjongGameState): number => {
-  console.log(getAllGroups(gameState));
-  const scores = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
-  return Math.max(...scores);
+  const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
+  return Math.max(...results.map(r => r.score));
 };
