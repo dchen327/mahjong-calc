@@ -698,10 +698,52 @@ const cases = [
       winningTile: 'bamboo-9',
     },
   },
+  {
+    name: 'Test 20',
+    expected: 31,
+    state: {
+      concealedTiles: ['bamboo-2', 'bamboo-4', 'wind-east', 'wind-east'],
+      declaredSets: [
+        ['bamboo-1', 'bamboo-2', 'bamboo-3'],
+        ['bamboo-3', 'bamboo-4', 'bamboo-5'],
+        ['bamboo-7', 'bamboo-7', 'bamboo-7'],
+      ],
+      lastTileInGame: true,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'bamboo-3',
+    },
+  },
+  {
+    name: 'Test 21',
+    expected: 3,
+    state: {
+      concealedTiles: ['bamboo-8', 'bamboo-9', 'wind-south', 'wind-south'],
+      declaredSets: [
+        ['bamboo-1', 'bamboo-1', 'bamboo-1'],
+        ['wan-3', 'wan-3', 'wan-3'],
+        ['wan-8', 'wan-8', 'wan-8'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'bamboo-7',
+    },
+  },
 ];
 
-// const filter: string[] = []; // ['Test 19']
-const filter: string[] = ['Test 19']; // ['Test 19']
+const filter: string[] = []; // ['Test 19']
+// const filter: string[] = ['Test 19']; // ['Test 19']
 
 describe('calculateMahjongScore (cases)', () => {
   cases

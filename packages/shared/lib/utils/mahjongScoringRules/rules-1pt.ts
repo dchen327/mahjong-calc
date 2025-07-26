@@ -166,7 +166,7 @@ export const edgeWait: MahjongScoringRule = {
     if (waitingTiles.length > 1) return 0;
     const winningTile = parseTile(gameState.winningTile);
     if (isHonor(winningTile)) return 0;
-    const chows = getChows(grouping).filter(group => group.tile.type === winningTile.type);
+    const chows = getChows(grouping).filter(group => group.hasWinner && group.tile.type === winningTile.type);
     return chows.some(
       chow => (chow.tile.value === 1 && winningTile.value === 3) || (chow.tile.value === 7 && winningTile.value === 7),
     )
@@ -184,7 +184,7 @@ export const closedWait: MahjongScoringRule = {
     if (waitingTiles.length > 1) return 0;
     const winningTile = parseTile(gameState.winningTile);
     if (isHonor(winningTile)) return 0;
-    const chows = getChows(grouping).filter(group => group.tile.type === winningTile.type);
+    const chows = getChows(grouping).filter(group => group.hasWinner && group.tile.type === winningTile.type);
     return chows.some(chow => typeof winningTile.value === 'number' && chow.tile.value === winningTile.value - 1)
       ? 1
       : 0;

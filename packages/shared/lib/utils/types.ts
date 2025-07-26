@@ -18,6 +18,7 @@ export interface BaseGroup {
   kind: string;
   tile?: MahjongTile;
   concealed?: boolean;
+  hasWinner?: boolean; // false: cannot c
 }
 
 // Chow group, store first tile in sequence

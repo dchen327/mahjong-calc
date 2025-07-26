@@ -93,16 +93,16 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
 
 const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
   if (tiles.length === 2 && isSameTile(tiles)) {
-    return { kind: 'pair', tile: tiles[0] };
+    return { kind: 'pair', tile: tiles[0], hasWinner: false };
   }
   if (tiles.length === 3 && isSameTile(tiles)) {
-    return { kind: 'pung', tile: tiles[0], concealed: false };
+    return { kind: 'pung', tile: tiles[0], concealed: false, hasWinner: false };
   }
   if (tiles.length === 4) {
-    return { kind: 'kong', tile: tiles[1], concealed: tiles[0].type === 'flipped' };
+    return { kind: 'kong', tile: tiles[1], concealed: tiles[0].type === 'flipped', hasWinner: false };
   }
   if (tiles.length === 3 && isSequential(tiles)) {
-    return { kind: 'chow', tile: tiles[0], concealed: false };
+    return { kind: 'chow', tile: tiles[0], concealed: false, hasWinner: false };
   }
   return null;
 };
@@ -220,7 +220,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
 
         search(next, nextIndices, [
           ...currentGroups,
-          { kind: 'pung', tile: remaining[i], concealed: !containsWinning },
+          { kind: 'pung', tile: remaining[i], concealed: !containsWinning, hasWinner: containsWinning },
         ]);
       }
     }
@@ -244,7 +244,10 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
             const containsWinning = groupIndices.includes(winningTileIdx);
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
             const nextIndices = remainingIndices.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-            search(next, nextIndices, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: !containsWinning }]);
+            search(next, nextIndices, [
+              ...currentGroups,
+              { kind: 'chow', tile: trio[0], concealed: !containsWinning, hasWinner: containsWinning },
+            ]);
           }
           if (isKnitted(trio)) {
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
