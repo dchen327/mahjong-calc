@@ -8,21 +8,30 @@ export const mixedStraight: MahjongScoringRule = {
   points: 8,
   evaluate: grouping => {
     const chows = getChows(grouping);
-    // Check all unique triples of chows
+    const used = Array(chows.length).fill(false);
+    let count = 0;
     for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        for (let k = j + 1; k < chows.length; k++) {
+      if (used[i]) continue;
+      for (let j = 0; j < chows.length; j++) {
+        if (i === j || used[j]) continue;
+        for (let k = 0; k < chows.length; k++) {
+          if (i === k || j === k || used[k]) continue;
           const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
           const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort();
           const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           // ensure values are [1, 4, 7]
           const isStraight = values[0] === 1 && values[1] === 4 && values[2] === 7;
-          if (allDifferentSuits && isStraight) return 1;
+          if (allDifferentSuits && isStraight) {
+            used[i] = used[j] = used[k] = true;
+            count++;
+            break;
+          }
         }
+        if (used[i]) break;
       }
     }
-    return 0;
+    return count;
   },
 };
 
@@ -60,19 +69,29 @@ export const mixedTripleChow: MahjongScoringRule = {
   excludes: ['2. Mixed Double Chow'],
   evaluate: grouping => {
     const chows = getChows(grouping);
+    const used = Array(chows.length).fill(false);
+    let count = 0;
     for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        for (let k = j + 1; k < chows.length; k++) {
+      if (used[i]) continue;
+      for (let j = 0; j < chows.length; j++) {
+        if (i === j || used[j]) continue;
+        for (let k = 0; k < chows.length; k++) {
+          if (i === k || j === k || used[k]) continue;
           const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort();
+          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number);
           const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           const isSameValue = values[0] === values[1] && values[1] === values[2];
-          if (allDifferentSuits && isSameValue) return 1;
+          if (allDifferentSuits && isSameValue) {
+            used[i] = used[j] = used[k] = true;
+            count++;
+            break;
+          }
         }
+        if (used[i]) break;
       }
     }
-    return 0;
+    return count;
   },
 };
 
@@ -82,19 +101,29 @@ export const mixedShiftedPungs: MahjongScoringRule = {
   points: 8,
   evaluate: grouping => {
     const pungsAndKongs = [...getPungs(grouping), ...getKongs(grouping)];
+    const used = Array(pungsAndKongs.length).fill(false);
+    let count = 0;
     for (let i = 0; i < pungsAndKongs.length; i++) {
-      for (let j = i + 1; j < pungsAndKongs.length; j++) {
-        for (let k = j + 1; k < pungsAndKongs.length; k++) {
+      if (used[i]) continue;
+      for (let j = 0; j < pungsAndKongs.length; j++) {
+        if (i === j || used[j]) continue;
+        for (let k = 0; k < pungsAndKongs.length; k++) {
+          if (i === k || j === k || used[k]) continue;
           const [p1, p2, p3] = [pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k]];
           const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort();
           const suits = [p1.tile.type, p2.tile.type, p3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           const isConsecutive = values[1] === values[0] + 1 && values[2] === values[1] + 1;
-          if (allDifferentSuits && isConsecutive) return 1;
+          if (allDifferentSuits && isConsecutive) {
+            used[i] = used[j] = used[k] = true;
+            count++;
+            break;
+          }
         }
+        if (used[i]) break;
       }
     }
-    return 0;
+    return count;
   },
 };
 
