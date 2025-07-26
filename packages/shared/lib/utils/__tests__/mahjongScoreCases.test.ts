@@ -740,6 +740,34 @@ const cases = [
       winningTile: 'bamboo-7',
     },
   },
+  {
+    name: 'Test 22',
+    expected: 2,
+    state: {
+      concealedTiles: [
+        'wan-2',
+        'wan-3',
+        'wan-4',
+        'circle-4',
+        'circle-5',
+        'circle-6',
+        'bamboo-6',
+        'bamboo-6',
+        'wind-east',
+        'wind-east',
+      ],
+      declaredSets: [['bamboo-5', 'bamboo-6', 'bamboo-7']],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'bamboo-6',
+    },
+  },
 ];
 
 const filter: string[] =
