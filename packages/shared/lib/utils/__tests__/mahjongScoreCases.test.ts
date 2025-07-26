@@ -742,8 +742,9 @@ const cases = [
   },
 ];
 
-const filter: string[] = []; // ['Test 19']
-// filter = ['Knitted Straight']; // ['Test 19']
+const filter: string[] =
+  // ['Knitted Straight'];
+  [];
 
 describe('calculateMahjongScore (cases)', () => {
   cases

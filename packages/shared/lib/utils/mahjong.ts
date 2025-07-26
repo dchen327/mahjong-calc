@@ -80,18 +80,20 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   const allCombinations = cartesianProduct(suitGroupings);
 
   // Add declared groups to each combination
-  const finalGroupings = allCombinations.map(groups => [...declaredGroups, ...groups.flat()]);
+  let finalGroupings = allCombinations.map(groups => [...declaredGroups, ...groups.flat()]);
 
   // Filter final groupings and ensure knitted groups are part of knitted straights
-  finalGroupings.filter(grouping => {
+  console.log(finalGroupings);
+  finalGroupings = finalGroupings.filter(grouping => {
     if (grouping.some(g => g.kind === 'knitted')) {
       const knittedGroups = grouping.filter(g => g.kind === 'knitted');
       // ensure that there are exactly 3 knitted groups, all different suits, all different values
       if (knittedGroups.length !== 3) return false;
       const suits = new Set(knittedGroups.map(g => g.tile.type));
       const values = new Set(knittedGroups.map(g => g.tile.value));
-      return suits.size !== 3 || values.size !== 3;
+      return suits.size === 3 && values.size === 3;
     }
+    return true;
   });
 
   if (finalGroupings.length === 0) {
@@ -310,6 +312,9 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
   for (const tileStr of allPlayableTiles) {
     const testState = { ...gameState, winningTile: tileStr };
     if (getAllGroups(testState).length > 0) {
+      console.log(tileStr);
+      console.log(getAllGroups(testState));
+      console.log('---');
       waits.push(parseTile(tileStr));
     }
   }

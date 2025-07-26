@@ -181,10 +181,10 @@ export const closedWait: MahjongScoringRule = {
   points: 1,
   evaluate: (grouping, gameState) => {
     const waitingTiles = getWaitTiles(gameState);
+    console.log(waitingTiles);
     if (waitingTiles.length > 1) return 0;
     const winningTile = parseTile(gameState.winningTile);
     if (isHonor(winningTile)) return 0;
-    console.log(getChows(grouping));
     const chows = getChows(grouping).filter(group => !group.declaredInGame && group.tile.type === winningTile.type);
     return chows.some(chow => typeof winningTile.value === 'number' && chow.tile.value === winningTile.value - 1)
       ? 1
