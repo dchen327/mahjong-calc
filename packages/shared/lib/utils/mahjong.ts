@@ -82,24 +82,34 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   // Add declared groups to each combination
   let finalGroupings = allCombinations.map(groups => [...declaredGroups, ...groups.flat()]);
 
-  // Filter final groupings and ensure knitted groups are part of knitted straights
-  console.log(finalGroupings);
+  // Filter final groupings
+  // ensure knitted groups are part of knitted straights
   finalGroupings = finalGroupings.filter(grouping => {
-    if (grouping.some(g => g.kind === 'knitted')) {
+    const isValidKnittedGrouping = (grouping: MahjongGroup[]): boolean => {
       const knittedGroups = grouping.filter(g => g.kind === 'knitted');
-      // ensure that there are exactly 3 knitted groups, all different suits, all different values
       if (knittedGroups.length !== 3) return false;
       const suits = new Set(knittedGroups.map(g => g.tile.type));
       const values = new Set(knittedGroups.map(g => g.tile.value));
       return suits.size === 3 && values.size === 3;
-    }
-    return true;
+    };
+
+    return !grouping.some(g => g.kind === 'knitted') || isValidKnittedGrouping(grouping);
+  });
+
+  // ensure groupings with pairs either have exactly 1 or 7 pairs
+  finalGroupings = finalGroupings.filter(grouping => {
+    const hasValidPairs = (grouping: MahjongGroup[]): boolean => {
+      const pairs = grouping.filter(g => g.kind === 'pair');
+      return pairs.length === 1 || pairs.length === 7;
+    };
+
+    return hasValidPairs(grouping);
   });
 
   if (finalGroupings.length === 0) {
     // check for knitted tiles and unpaired honors
-    const knittedGrooping = checkKnittedTilesAndUnpairedHonors(nonDeclaredTiles.map(t => parseTile(t)));
-    if (knittedGrooping.length > 0) finalGroupings.push(knittedGrooping);
+    const knittedGrouping = checkKnittedTilesAndUnpairedHonors(nonDeclaredTiles.map(t => parseTile(t)));
+    if (knittedGrouping.length > 0) finalGroupings.push(knittedGrouping);
   }
 
   return finalGroupings;
@@ -222,7 +232,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
 
         search(next, nextIndices, [
           ...currentGroups,
-          { kind: 'pung', tile: remaining[i], concealed: !containsWinning },
+          { kind: 'pung', tile: remaining[i], concealed: !containsWinning, declaredInGame: false },
         ]);
       }
     }
@@ -246,7 +256,10 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
             const containsWinning = groupIndices.includes(winningTileIdx);
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
             const nextIndices = remainingIndices.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-            search(next, nextIndices, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: !containsWinning }]);
+            search(next, nextIndices, [
+              ...currentGroups,
+              { kind: 'chow', tile: trio[0], concealed: !containsWinning, declaredInGame: false },
+            ]);
           }
           if (isKnitted(trio)) {
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
@@ -260,7 +273,6 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
 
   const originalIndices = tiles.map((_, idx) => idx);
   search(tiles, originalIndices, []);
-  // console.log(`Found ${results.length} groupings for ${tiles.map(t => `${t.type}-${t.value}`).join(', ')}`);
   return results;
 };
 
@@ -311,19 +323,13 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
   const waits: MahjongTile[] = [];
   for (const tileStr of allPlayableTiles) {
     const testState = { ...gameState, winningTile: tileStr };
-    if (getAllGroups(testState).length > 0) {
-      console.log(tileStr);
-      console.log(getAllGroups(testState));
-      console.log('---');
-      waits.push(parseTile(tileStr));
-    }
+    if (getAllGroups(testState).length > 0) waits.push(parseTile(tileStr));
   }
   return waits;
 });
 
 export const calculateMahjongScore = (gameState: MahjongGameState): HandScoreResult => {
   try {
-    console.log(getAllGroups(gameState));
     const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
     if (results.length === 0) {
       return { score: 0, matched: [] };

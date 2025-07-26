@@ -768,10 +768,38 @@ const cases = [
       winningTile: 'bamboo-6',
     },
   },
+  {
+    name: 'Test 23',
+    expected: 9,
+    state: {
+      concealedTiles: [
+        'circle-1',
+        'circle-1',
+        'circle-1',
+        'circle-1',
+        'circle-2',
+        'bamboo-2',
+        'bamboo-2',
+        'bamboo-2',
+        'bamboo-1',
+        'bamboo-1',
+      ],
+      declaredSets: [['circle-3', 'circle-4', 'circle-5']],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'circle-3',
+    },
+  },
 ];
 
 const filter: string[] =
-  // ['Knitted Straight'];
+  // ['Test 23'];
   [];
 
 describe('calculateMahjongScore (cases)', () => {
