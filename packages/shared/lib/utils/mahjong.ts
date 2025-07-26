@@ -1,4 +1,4 @@
-import { mahjongScoringRules } from './mahjongScoringRules.js';
+import { mahjongScoringRules } from './mahjongScoringRules/index.js';
 import { compareTiles, isHonor, isKnitted, isSameTile, isSequential, parseTile, toString } from './mahjongTile.js';
 import type { HandScoreResult, HandScoreRuleSummary } from '@extension/storage';
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
