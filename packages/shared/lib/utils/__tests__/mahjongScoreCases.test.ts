@@ -678,17 +678,41 @@ const cases = [
       winningTile: 'circle-7',
     },
   },
+  {
+    name: 'Test 19',
+    expected: 3,
+    state: {
+      concealedTiles: ['bamboo-6', 'bamboo-6', 'bamboo-6', 'bamboo-3', 'bamboo-4', 'bamboo-5', 'bamboo-9'],
+      declaredSets: [
+        ['bamboo-2', 'bamboo-3', 'bamboo-4'],
+        ['wan-5', 'wan-6', 'wan-7'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'bamboo-9',
+    },
+  },
 ];
 
+// const filter: string[] = []; // ['Test 19']
+const filter: string[] = ['Test 19']; // ['Test 19']
+
 describe('calculateMahjongScore (cases)', () => {
-  cases.forEach(({ name, state, expected }) => {
-    it.only(`returns ${expected} for ${name}`, () => {
-      const result = calculateMahjongScore(state);
-      if (result.score !== expected) {
-        // Print matched rules for debugging
-        console.log('Matched rules:', result.matched);
-      }
-      expect(result.score).toBe(expected);
+  cases
+    .filter(({ name }) => filter.length === 0 || filter.includes(name))
+    .forEach(({ name, state, expected }) => {
+      it(`returns ${expected} for ${name}`, () => {
+        const result = calculateMahjongScore(state);
+        if (result.score !== expected) {
+          console.log('Matched rules:', result.matched);
+        }
+        expect(result.score).toBe(expected);
+      });
     });
-  });
 });

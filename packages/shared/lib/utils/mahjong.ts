@@ -193,6 +193,15 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
 
   const search = (remaining: MahjongTile[], remainingIndices: number[], currentGroups: MahjongGroup[]) => {
     if (remaining.length === 0) {
+      // grouping is only allowed to have knitted group if there are 3 of them
+      if (currentGroups.some(g => g.kind === 'knitted')) {
+        const knittedGroups = currentGroups.filter(g => g.kind === 'knitted');
+        // ensure that there are exactly 3 knitted groups, all different suits, all different values
+        if (knittedGroups.length !== 3) return;
+        const suits = new Set(knittedGroups.map(g => g.tile.type));
+        const values = new Set(knittedGroups.map(g => g.tile.value));
+        if (suits.size !== 3 || values.size !== 3) return;
+      }
       const key = serializeGrouping(currentGroups);
       if (!seen.has(key)) {
         seen.add(key);
@@ -308,13 +317,22 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
 });
 
 export const calculateMahjongScore = (gameState: MahjongGameState): HandScoreResult => {
-  const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
-  // Find the result with the maximum score
-  const maxResult = results.reduce((max, curr) => (curr.score > max.score ? curr : max), results[0]);
-  const matched: HandScoreRuleSummary[] = maxResult.matched.map(({ rule, quant }) => ({
-    name: rule.name,
-    points: rule.points,
-    quant,
-  }));
-  return { score: maxResult.score, matched };
+  try {
+    const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
+    if (results.length === 0) {
+      return { score: 0, matched: [] };
+    }
+    // Find the result with the maximum score
+    const maxResult = results.reduce((max, curr) => (curr.score > max.score ? curr : max), results[0]);
+    const matched: HandScoreRuleSummary[] = maxResult.matched.map(({ rule, quant }) => ({
+      name: rule.name,
+      points: rule.points,
+      quant,
+    }));
+    return { score: maxResult.score, matched };
+  } catch (e) {
+    // Gracefully handle any unexpected errors
+    console.error('Error calculating Mahjong score:', e);
+    return { score: 0, matched: [] };
+  }
 };
