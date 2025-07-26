@@ -1,5 +1,14 @@
 import { mahjongScoringRules } from './mahjongScoringRules/index.js';
-import { compareTiles, isHonor, isKnitted, isSameTile, isSequential, parseTile, toString } from './mahjongTile.js';
+import {
+  compareTiles,
+  isHonor,
+  isKnitted,
+  isSameTile,
+  isSequential,
+  isTerminal,
+  parseTile,
+  toString,
+} from './mahjongTile.js';
 import type { HandScoreResult, HandScoreRuleSummary } from '@extension/storage';
 import type { MahjongGameState } from '@extension/storage/lib/base/types.js';
 import type { MahjongGroup, MahjongScoringRule, MahjongTile } from 'index.mjs';
@@ -110,6 +119,10 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
     // check for knitted tiles and unpaired honors
     const knittedGrouping = checkKnittedTilesAndUnpairedHonors(nonDeclaredTiles.map(t => parseTile(t)));
     if (knittedGrouping.length > 0) finalGroupings.push(knittedGrouping);
+
+    // check for thirteen orphans
+    const thirteenOrphansGrouping = checkThirteenOrphans(nonDeclaredTiles.map(t => parseTile(t)));
+    if (thirteenOrphansGrouping.length > 0) finalGroupings.push(thirteenOrphansGrouping);
   }
 
   return finalGroupings;
@@ -193,6 +206,16 @@ const checkKnittedTilesAndUnpairedHonors = (tiles: MahjongTile[]): MahjongGroup[
   }
 
   return [];
+};
+
+const checkThirteenOrphans = (tiles: MahjongTile[]): MahjongGroup[] => {
+  // One of each Honor and Terminal (1 or 9) tile, and a second copy of any Honor or Terminal tile.
+  if (tiles.length !== 14) return [];
+  if (!tiles.every(tile => isHonor(tile) || isTerminal(tile))) return [];
+  // One dupliate means set has length 13
+  const uniqueTiles = new Set(tiles.map(t => toString(t)));
+  if (uniqueTiles.size !== 13) return [];
+  return [{ kind: 'thirteen-orphans', tile: tiles[0], tiles, concealed: true }];
 };
 
 const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): MahjongGroup[][] => {

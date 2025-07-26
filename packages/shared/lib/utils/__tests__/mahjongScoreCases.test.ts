@@ -796,10 +796,72 @@ const cases = [
       winningTile: 'circle-3',
     },
   },
+  {
+    name: 'Thirteen Orphans',
+    expected: 92,
+    state: {
+      concealedTiles: [
+        'bamboo-1',
+        'bamboo-9',
+        'wan-1',
+        'wan-9',
+        'circle-1',
+        'circle-9',
+        'wind-east',
+        'wind-south',
+        'wind-west',
+        'wind-north',
+        'dragon-red',
+        'dragon-white',
+        'dragon-green',
+      ],
+      declaredSets: [],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wind-north',
+    },
+  },
+  {
+    name: 'Nine Gates',
+    expected: 91,
+    state: {
+      concealedTiles: [
+        'wan-1',
+        'wan-1',
+        'wan-1',
+        'wan-2',
+        'wan-3',
+        'wan-4',
+        'wan-5',
+        'wan-6',
+        'wan-7',
+        'wan-8',
+        'wan-9',
+        'wan-9',
+        'wan-9',
+      ],
+      declaredSets: [],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'wan-2',
+    },
+  },
 ];
 
 const filter: string[] =
-  // ['Test 23'];
+  // ['Nine Gates'];
   [];
 
 describe('calculateMahjongScore (cases)', () => {

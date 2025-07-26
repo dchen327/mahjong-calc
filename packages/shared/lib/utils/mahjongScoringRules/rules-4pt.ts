@@ -19,6 +19,8 @@ export const fullyConcealedHand: MahjongScoringRule = {
     if (grouping.length === 1 && grouping[0].kind === 'knitted-and-honors' && gameState.winFromWall) return 1;
     // special case for seven pairs
     if (grouping.length === 7 && grouping.every(group => group.kind === 'pair') && gameState.winFromWall) return 1;
+    // special case for thirteen orphans
+    if (grouping.length === 1 && grouping[0].kind === 'thirteen-orphans' && gameState.winFromWall) return 1;
     // all non pair groups must be concealed (must be 4 groups too)
     const concealedGroups = grouping.filter(group => group.kind !== 'pair' && group.concealed);
     return concealedGroups.length === 4 && gameState.winFromWall ? 1 : 0;

@@ -132,6 +132,23 @@ export const getAllTilesFromGrouping = (grouping: MahjongGroup[]): MahjongTile[]
         { type: group.tile.type, value: group.tile.value + 1 },
         { type: group.tile.type, value: group.tile.value + 2 },
       ];
-    } else if (group.kind === 'knitted-and-honors') return group.tiles;
-    return [group.tile];
+    } else if (group.kind === 'pung') {
+      return [group.tile, group.tile, group.tile];
+    } else if (group.kind === 'kong') {
+      return [group.tile, group.tile, group.tile, group.tile];
+    } else if (group.kind === 'pair') {
+      return [group.tile, group.tile];
+    } else if (group.kind === 'knitted' && typeof group.tile.value === 'number') {
+      return [
+        group.tile,
+        { type: group.tile.type, value: group.tile.value + 3 },
+        { type: group.tile.type, value: group.tile.value + 6 },
+      ];
+    } else if (group.kind === 'knitted-and-honors') {
+      return group.tiles;
+    } else if (group.kind === 'thirteen-orphans') {
+      return group.tiles;
+    }
+
+    return [];
   });

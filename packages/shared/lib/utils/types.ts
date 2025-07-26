@@ -55,14 +55,28 @@ export interface KnittedGroup extends BaseGroup {
 }
 
 // Special, for storing entire hand of knitted tiles and unpaired honors
-export interface KnittedTilesAndUnpairedHonors extends BaseGroup {
+export interface KnittedTilesAndUnpairedHonorsGroup extends BaseGroup {
   kind: 'knitted-and-honors';
   tile: MahjongTile;
   tiles: MahjongTile[];
 }
 
+export interface ThirteenOrphansGroup extends BaseGroup {
+  kind: 'thirteen-orphans';
+  tile: MahjongTile;
+  tiles: MahjongTile[];
+  concealed: boolean;
+}
+
 // Union type for all groups
-export type MahjongGroup = ChowGroup | PungGroup | KongGroup | PairGroup | KnittedGroup | KnittedTilesAndUnpairedHonors;
+export type MahjongGroup =
+  | ChowGroup
+  | PungGroup
+  | KongGroup
+  | PairGroup
+  | KnittedGroup
+  | KnittedTilesAndUnpairedHonorsGroup
+  | ThirteenOrphansGroup;
 
 export interface MahjongScoringRule {
   name: string;

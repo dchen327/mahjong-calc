@@ -57,6 +57,15 @@ import {
 } from './rules-64pt.js';
 import { allPungs, halfFlush, mixedShiftedChows, allTypes, meldedHand, twoDragonPungs } from './rules-6pt.js';
 import {
+  allGreen,
+  bigFourWinds,
+  bigThreeDragons,
+  fourKongs,
+  nineGates,
+  sevenShiftedPairs,
+  thirteenOrphans,
+} from './rules-88pt.js';
+import {
   mixedStraight,
   reversibleTiles,
   mixedTripleChow,
@@ -79,6 +88,7 @@ export * from './rules-24pt.js';
 export * from './rules-32pt.js';
 export * from './rules-48pt.js';
 export * from './rules-64pt.js';
+export * from './rules-88pt.js';
 
 export const mahjongScoringRules = [
   // 1 point
@@ -164,4 +174,12 @@ export const mahjongScoringRules = [
   littleThreeDragons,
   fourConcealedPungs,
   pureTerminalChows,
+  // 88 points
+  bigFourWinds,
+  bigThreeDragons,
+  allGreen,
+  nineGates,
+  fourKongs,
+  sevenShiftedPairs,
+  thirteenOrphans,
 ];

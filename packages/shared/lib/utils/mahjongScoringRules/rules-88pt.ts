@@ -56,14 +56,18 @@ export const nineGates: MahjongScoringRule = {
   evaluate: grouping => {
     const allTiles = getAllTilesFromGrouping(grouping).filter(tile => !isHonor(tile));
     if (allTiles.length !== 14 || new Set(allTiles.map(tile => tile.type)).size !== 1) return 0;
-    const values = allTiles.map(tile => Number(tile.value)).sort((a, b) => a - b);
-    const basePattern = [1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9];
-    // Try removing each tile and check if the rest match the base pattern
-    for (let i = 0; i < values.length; i++) {
-      const test = values.slice(0, i).concat(values.slice(i + 1));
-      if (basePattern.every((v, idx) => test[idx] === v)) return 1;
+    const counts = Array(10).fill(0); // index 1-9
+    for (const tile of allTiles) {
+      const v = Number(tile.value);
+      if (v < 1 || v > 9) return 0;
+      counts[v]++;
     }
-    return 0;
+    // Check pattern: 1 and 9 appear at least 3 times, 2-8 at least once
+    if (counts[1] < 3 || counts[9] < 3) return 0;
+    for (let v = 2; v <= 8; v++) {
+      if (counts[v] < 1) return 0;
+    }
+    return 1;
   },
 };
 
@@ -106,8 +110,9 @@ export const sevenShiftedPairs: MahjongScoringRule = {
 };
 
 // Thirteen Orphans - One of each Honor and Terminal (1 or 9) tile, and a second copy of any Honor or Terminal tile.
-// Does not combine with:
-// Concealed Hand
-// Outside Hand
-// All Types
-// All Terminals and Honors
+export const thirteenOrphans: MahjongScoringRule = {
+  name: '81. Thirteen Orphans',
+  points: 88,
+  excludes: ['17. Concealed Hand', '24. Outside Hand', '31. All Types', '66. All Terminals and Honors'],
+  evaluate: grouping => (grouping.length === 1 && grouping[0].kind === 'thirteen-orphans' ? 1 : 0),
+};
