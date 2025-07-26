@@ -82,6 +82,18 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
   // Add declared groups to each combination
   const finalGroupings = allCombinations.map(groups => [...declaredGroups, ...groups.flat()]);
 
+  // Filter final groupings and ensure knitted groups are part of knitted straights
+  finalGroupings.filter(grouping => {
+    if (grouping.some(g => g.kind === 'knitted')) {
+      const knittedGroups = grouping.filter(g => g.kind === 'knitted');
+      // ensure that there are exactly 3 knitted groups, all different suits, all different values
+      if (knittedGroups.length !== 3) return false;
+      const suits = new Set(knittedGroups.map(g => g.tile.type));
+      const values = new Set(knittedGroups.map(g => g.tile.value));
+      return suits.size !== 3 || values.size !== 3;
+    }
+  });
+
   if (finalGroupings.length === 0) {
     // check for knitted tiles and unpaired honors
     const knittedGrooping = checkKnittedTilesAndUnpairedHonors(nonDeclaredTiles.map(t => parseTile(t)));
@@ -92,17 +104,14 @@ const getAllGroups = (gameState: MahjongGameState): MahjongGroup[][] => {
 };
 
 const parseDeclaredSet = (tiles: MahjongTile[]): MahjongGroup | null => {
-  if (tiles.length === 2 && isSameTile(tiles)) {
-    return { kind: 'pair', tile: tiles[0], hasWinner: false };
-  }
   if (tiles.length === 3 && isSameTile(tiles)) {
-    return { kind: 'pung', tile: tiles[0], concealed: false, hasWinner: false };
+    return { kind: 'pung', tile: tiles[0], concealed: false, declaredInGame: true };
   }
   if (tiles.length === 4) {
-    return { kind: 'kong', tile: tiles[1], concealed: tiles[0].type === 'flipped', hasWinner: false };
+    return { kind: 'kong', tile: tiles[1], concealed: tiles[0].type === 'flipped', declaredInGame: true };
   }
   if (tiles.length === 3 && isSequential(tiles)) {
-    return { kind: 'chow', tile: tiles[0], concealed: false, hasWinner: false };
+    return { kind: 'chow', tile: tiles[0], concealed: false, declaredInGame: true };
   }
   return null;
 };
@@ -193,15 +202,6 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
 
   const search = (remaining: MahjongTile[], remainingIndices: number[], currentGroups: MahjongGroup[]) => {
     if (remaining.length === 0) {
-      // grouping is only allowed to have knitted group if there are 3 of them
-      if (currentGroups.some(g => g.kind === 'knitted')) {
-        const knittedGroups = currentGroups.filter(g => g.kind === 'knitted');
-        // ensure that there are exactly 3 knitted groups, all different suits, all different values
-        if (knittedGroups.length !== 3) return;
-        const suits = new Set(knittedGroups.map(g => g.tile.type));
-        const values = new Set(knittedGroups.map(g => g.tile.value));
-        if (suits.size !== 3 || values.size !== 3) return;
-      }
       const key = serializeGrouping(currentGroups);
       if (!seen.has(key)) {
         seen.add(key);
@@ -220,7 +220,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
 
         search(next, nextIndices, [
           ...currentGroups,
-          { kind: 'pung', tile: remaining[i], concealed: !containsWinning, hasWinner: containsWinning },
+          { kind: 'pung', tile: remaining[i], concealed: !containsWinning },
         ]);
       }
     }
@@ -244,10 +244,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
             const containsWinning = groupIndices.includes(winningTileIdx);
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
             const nextIndices = remainingIndices.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-            search(next, nextIndices, [
-              ...currentGroups,
-              { kind: 'chow', tile: trio[0], concealed: !containsWinning, hasWinner: containsWinning },
-            ]);
+            search(next, nextIndices, [...currentGroups, { kind: 'chow', tile: trio[0], concealed: !containsWinning }]);
           }
           if (isKnitted(trio)) {
             const next = remaining.filter((_, idx) => idx !== i && idx !== j && idx !== k);
@@ -321,6 +318,7 @@ export const getWaitTiles = memoize((gameState: MahjongGameState): MahjongTile[]
 
 export const calculateMahjongScore = (gameState: MahjongGameState): HandScoreResult => {
   try {
+    console.log(getAllGroups(gameState));
     const results = getAllGroups(gameState).map(grouping => scoreGrouping(grouping, gameState));
     if (results.length === 0) {
       return { score: 0, matched: [] };

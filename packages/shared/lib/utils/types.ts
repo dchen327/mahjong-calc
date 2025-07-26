@@ -18,7 +18,7 @@ export interface BaseGroup {
   kind: string;
   tile?: MahjongTile;
   concealed?: boolean;
-  hasWinner?: boolean; // false: cannot c
+  declaredInGame?: boolean; // true means cannot contain the winning tile (was declared before winning)
 }
 
 // Chow group, store first tile in sequence
