@@ -214,9 +214,11 @@ handScoreStorage.subscribe(() => {
       const checkButton = document.getElementById('check_button') as HTMLButtonElement;
       if (checkButton) {
         checkButton.disabled = false;
+        // Wait 0.5s then click the check button
+        setTimeout(() => {
+          checkButton.click();
+        }, 200);
       }
-
-      console.log(`[CEB] Updated points input with score: ${currentScore.score}`);
     } else {
       console.warn('[CEB] Points input element not found');
     }
