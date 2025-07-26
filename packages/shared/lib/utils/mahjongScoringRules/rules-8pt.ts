@@ -17,7 +17,7 @@ export const mixedStraight: MahjongScoringRule = {
         for (let k = 0; k < chows.length; k++) {
           if (i === k || j === k || used[k]) continue;
           const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort();
+          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
           const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           // ensure values are [1, 4, 7]
@@ -110,7 +110,7 @@ export const mixedShiftedPungs: MahjongScoringRule = {
         for (let k = 0; k < pungsAndKongs.length; k++) {
           if (i === k || j === k || used[k]) continue;
           const [p1, p2, p3] = [pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k]];
-          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort();
+          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort((a, b) => a - b);
           const suits = [p1.tile.type, p2.tile.type, p3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           const isConsecutive = values[1] === values[0] + 1 && values[2] === values[1] + 1;
@@ -139,8 +139,6 @@ export const twoConcealedKongs: MahjongScoringRule = {
 };
 
 // Last Tile Draw - Winning by draw on the last tile of the wall.
-// Does not combine with:
-// Self Drawn
 export const lastTileDraw: MahjongScoringRule = {
   name: '39. Last Tile Draw',
   points: 8,
@@ -164,8 +162,6 @@ export const outWithReplacementTile: MahjongScoringRule = {
 };
 
 // Robbing the Kong - Winning off the tile that another player attempts to use to promote a Pung to a Kong.
-// Does not combine with:
-// Last of its Kind
 export const robbingTheKong: MahjongScoringRule = {
   name: '42. Robbing the Kong',
   points: 8,

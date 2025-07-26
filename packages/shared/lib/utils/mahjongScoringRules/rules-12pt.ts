@@ -26,7 +26,7 @@ export const knittedStraight: MahjongScoringRule = {
     const knitted = getKnitted(grouping);
     if (knitted.length !== 3) return 0;
     const [k1, k2, k3] = knitted;
-    const values = [k1.tile.value, k2.tile.value, k3.tile.value].map(Number).sort();
+    const values = [k1.tile.value, k2.tile.value, k3.tile.value].map(Number).sort((a, b) => a - b);
     const suits = [k1.tile.type, k2.tile.type, k3.tile.type];
     const allDifferentSuits = new Set(suits).size === 3;
     const isConsecutive = values[0] === 1 && values[1] === 2 && values[2] === 3;

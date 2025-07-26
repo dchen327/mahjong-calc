@@ -180,7 +180,7 @@ const checkKnittedTilesAndUnpairedHonors = (tiles: MahjongTile[]): MahjongGroup[
     }
   }
 
-  if (presentKnittedGroupIdxs.sort().toString() === '0,1,2') {
+  if (presentKnittedGroupIdxs.sort((a, b) => a - b).toString() === '0,1,2') {
     // We have a knitted group, return it
     return [
       {
@@ -209,7 +209,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
         }
         return base;
       })
-      .sort()
+      .sort((a, b) => a - b)
       .join('|');
 
   const search = (remaining: MahjongTile[], remainingIndices: number[], currentGroups: MahjongGroup[]) => {

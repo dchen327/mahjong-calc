@@ -61,9 +61,6 @@ export const littleFourWinds: MahjongScoringRule = {
 };
 
 // Little Three Dragons - Two Pungs or Kongs of Dragons and a pair of the last Dragon.
-// Does not combine with:
-// Dragon Pung
-// Two Dragon Pungs
 export const littleThreeDragons: MahjongScoringRule = {
   name: '72. Little Three Dragons',
   points: 64,
@@ -80,11 +77,6 @@ export const littleThreeDragons: MahjongScoringRule = {
 };
 
 // Four Concealed Pungs - Four concealed Pungs or Kongs
-// Does not combine with:
-// Concealed Hand
-// Two Concealed Pungs
-// All Pungs
-// Three Concealed Pungs
 export const fourConcealedPungs: MahjongScoringRule = {
   name: '73. Four Concealed Pungs',
   points: 64,
@@ -126,7 +118,7 @@ export const pureTerminalChows: MahjongScoringRule = {
     const values = chows
       .map(chow => chow.tile.value)
       .map(Number)
-      .sort();
+      .sort((a, b) => a - b);
     return values[0] === 1 && values[1] === 1 && values[2] === 7 && values[3] === 7 ? 1 : 0;
   },
 };

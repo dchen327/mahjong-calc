@@ -27,10 +27,6 @@ export const greaterHonorsAndKnittedTiles: MahjongScoringRule = {
 };
 
 // All Even Pungs - Four Pungs or Kongs and a pair of even suit tiles.
-// Does not combine with:
-// No Honor Tiles
-// All Simples
-// All Pungs
 export const allEvenPungs: MahjongScoringRule = {
   name: '57. All Even Pungs',
   points: 24,
@@ -44,10 +40,6 @@ export const allEvenPungs: MahjongScoringRule = {
 };
 
 // Full Flush - The hand is composed entirely of a single suit.
-// Does not combine with:
-// One Voided Suit
-// No Honor Tiles
-// Half Flush
 export const fullFlush: MahjongScoringRule = {
   name: '58. Full Flush',
   points: 24,
@@ -60,8 +52,6 @@ export const fullFlush: MahjongScoringRule = {
 };
 
 // Pure Triple Chow - Three identical Chows in the same suit.
-// Does not combine with:
-// Pure Double Chow
 export const pureTripleChow: MahjongScoringRule = {
   name: '59. Pure Triple Chow',
   points: 24,
@@ -96,7 +86,7 @@ export const pureShiftedPungs: MahjongScoringRule = {
         for (let k = j + 1; k < pungsAndKongs.length; k++) {
           const [p1, p2, p3] = [pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k]];
           if (p1.tile.type !== p2.tile.type || p1.tile.type !== p3.tile.type) continue;
-          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort();
+          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort((a, b) => a - b);
           const diff1 = values[1] - values[0];
           const diff2 = values[2] - values[1];
           // All differences must be 1 (shifted by one)

@@ -53,7 +53,7 @@ export const mixedShiftedChows: MahjongScoringRule = {
         for (let k = 0; k < chows.length; k++) {
           if (i === k || j === k || used[k]) continue;
           const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort();
+          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
           const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
           const allDifferentSuits = new Set(suits).size === 3;
           const isConsecutive = values[1] === values[0] + 1 && values[2] === values[1] + 1;

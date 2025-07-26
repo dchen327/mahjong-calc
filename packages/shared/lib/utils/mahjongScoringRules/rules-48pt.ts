@@ -27,7 +27,7 @@ export const fourPureShiftedPungs: MahjongScoringRule = {
     const values = pungsAndKongs
       .map(pung => pung.tile.value)
       .map(Number)
-      .sort();
+      .sort((a, b) => a - b);
     return values.every((val, i) => i === 0 || val === values[i - 1] + 1) ? 1 : 0;
   },
 };

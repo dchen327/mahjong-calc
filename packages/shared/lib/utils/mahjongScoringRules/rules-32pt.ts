@@ -3,9 +3,6 @@ import type { KongGroup, MahjongScoringRule } from 'index.mjs';
 
 // 32 point rules
 // Four Shifted Chows - Four Chows in a suit, each shifted up by one or two but not a combination of both.
-// Does not combine with:
-// Short Straight
-// Pure Shifted Chows
 export const fourShiftedChows: MahjongScoringRule = {
   name: '64. Four Shifted Chows',
   points: 32,
@@ -17,7 +14,7 @@ export const fourShiftedChows: MahjongScoringRule = {
     const suit = chows[0].tile.type;
     if (!chows.every(chow => chow.tile.type === suit)) return 0;
     // sort and check if shifted by 1 or 2
-    const values = chows.map(chow => Number(chow.tile.value)).sort();
+    const values = chows.map(chow => Number(chow.tile.value)).sort((a, b) => a - b);
     const diffs = values.map((v, i) => (i > 0 ? v - values[i - 1] : 0));
     const isShiftedByOne = diffs.every(diff => diff === 1);
     const isShiftedByTwo = diffs.every(diff => diff === 2);

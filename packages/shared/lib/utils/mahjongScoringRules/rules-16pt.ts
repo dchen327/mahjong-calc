@@ -58,7 +58,7 @@ export const pureShiftedChows: MahjongScoringRule = {
         for (let k = j + 1; k < chows.length; k++) {
           const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
           if (c1.tile.type !== c2.tile.type || c1.tile.type !== c3.tile.type) continue;
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort();
+          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
           const diff1 = values[1] - values[0];
           const diff2 = values[2] - values[1];
           // All differences must be 1 (shifted by one) or all 2 (shifted by two)

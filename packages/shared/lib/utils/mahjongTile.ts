@@ -39,6 +39,11 @@ export const isSimple = (tile: MahjongTile): boolean =>
 export const isTerminal = (tile: MahjongTile): boolean =>
   (tile.type === 'circle' || tile.type === 'bamboo' || tile.type === 'wan') && (tile.value === 1 || tile.value === 9);
 
+export const isGreen = (tile: MahjongTile): boolean =>
+  // 2,3,4,6,8 Bamboo; Green Dragon
+  (tile.type === 'bamboo' && [2, 3, 4, 6, 8].includes(tile.value as number)) ||
+  (tile.type === 'dragon' && tile.value === 'green');
+
 export const compareTiles = (a: MahjongTile, b: MahjongTile): number => {
   const typeDiff = tileTypeOrder.indexOf(a.type) - tileTypeOrder.indexOf(b.type);
   if (typeDiff !== 0) return typeDiff;
@@ -68,7 +73,7 @@ export const isKnitted = (tiles: MahjongTile[]): boolean => {
   const [a, b, c] = tiles;
   if (a.type !== b.type || b.type !== c.type) return false;
   if (typeof a.value !== 'number' || typeof b.value !== 'number' || typeof c.value !== 'number') return false;
-  const values = [a.value, b.value, c.value].sort();
+  const values = [a.value, b.value, c.value].sort((a, b) => a - b);
   return values[1] === values[0] + 3 && values[2] === values[1] + 3;
 };
 
