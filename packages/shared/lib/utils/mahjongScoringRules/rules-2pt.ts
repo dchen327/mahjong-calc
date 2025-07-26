@@ -62,7 +62,8 @@ export const concealedHand: MahjongScoringRule = {
       .every(group => {
         if (!group.concealed) {
           // If not concealed, must contain the winning tile
-          return isSameTile([group.tile, winningTile]);
+          const groupTiles = getAllTilesFromGrouping([group]);
+          return groupTiles.some(tile => isSameTile([tile, winningTile]));
         }
         return true;
       }) && gameState.winFromDiscard
