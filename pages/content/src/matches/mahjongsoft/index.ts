@@ -60,6 +60,8 @@ const cards = [
   'blank',
 ];
 
+let hasGameStarted = false;
+
 const getCardFromTileDiv = (tileDiv: HTMLDivElement | null): string | null => {
   if (!tileDiv || tileDiv.style.display === 'none') return null;
   const x = tileDiv.style.backgroundPosition.split(' ')[0].replace('px', '');
@@ -186,11 +188,11 @@ if (!handElement) {
 
     if (hasChanged) {
       mahjongGameStateStorage.updateGameState(newGameState);
-      // Updated state invalidates previous hand score, set to { score: 0, matched: [] }
       handScoreStorage
         .updateScore({ score: 0, matched: [] })
         .catch(error => console.error('Failed to reset hand score:', error));
       lastGameState = newGameState;
+      hasGameStarted = true;
     }
   });
 
@@ -203,18 +205,14 @@ if (!handElement) {
 handScoreStorage.subscribe(() => {
   const currentScore = handScoreStorage.getSnapshot();
 
-  if (currentScore && currentScore.score > 0) {
+  if (currentScore && currentScore.score > 0 && hasGameStarted) {
     const pointsInput = document.getElementById('points') as HTMLInputElement;
     if (pointsInput) {
       pointsInput.value = currentScore.score.toString();
-      // Dispatch input event to simulate user typing
       pointsInput.dispatchEvent(new Event('input', { bubbles: true }));
-
-      // Enable the check button
       const checkButton = document.getElementById('check_button') as HTMLButtonElement;
       if (checkButton) {
         checkButton.disabled = false;
-        // Wait 0.5s then click the check button
         setTimeout(() => {
           checkButton.click();
         }, 200);
