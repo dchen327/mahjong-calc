@@ -209,7 +209,7 @@ const findAllSuitGroupings = (tiles: MahjongTile[], winningTile: MahjongTile): M
         }
         return base;
       })
-      .sort((a, b) => a - b)
+      .sort()
       .join('|');
 
   const search = (remaining: MahjongTile[], remainingIndices: number[], currentGroups: MahjongGroup[]) => {
