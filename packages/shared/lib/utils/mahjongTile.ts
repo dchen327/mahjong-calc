@@ -58,7 +58,7 @@ export const isSequential = (tiles: MahjongTile[]): boolean => {
   const [a, b, c] = tiles;
   if (a.type !== b.type || b.type !== c.type) return false;
   if (typeof a.value !== 'number' || typeof b.value !== 'number' || typeof c.value !== 'number') return false;
-  const values = [a.value, b.value, c.value].sort((x, y) => x - y);
+  const values = [a.value, b.value, c.value].sort();
   return values[1] === values[0] + 1 && values[2] === values[1] + 1;
 };
 
@@ -68,7 +68,7 @@ export const isKnitted = (tiles: MahjongTile[]): boolean => {
   const [a, b, c] = tiles;
   if (a.type !== b.type || b.type !== c.type) return false;
   if (typeof a.value !== 'number' || typeof b.value !== 'number' || typeof c.value !== 'number') return false;
-  const values = [a.value, b.value, c.value].sort((x, y) => x - y);
+  const values = [a.value, b.value, c.value].sort();
   return values[1] === values[0] + 3 && values[2] === values[1] + 3;
 };
 

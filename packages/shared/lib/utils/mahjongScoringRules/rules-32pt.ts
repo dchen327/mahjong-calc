@@ -1,5 +1,5 @@
 import { getAllTilesFromGrouping, getChows, isHonor, isTerminal } from '../mahjongTile.js';
-import type { MahjongScoringRule } from 'index.mjs';
+import type { KongGroup, MahjongScoringRule } from 'index.mjs';
 
 // 32 point rules
 // Four Shifted Chows - Four Chows in a suit, each shifted up by one or two but not a combination of both.

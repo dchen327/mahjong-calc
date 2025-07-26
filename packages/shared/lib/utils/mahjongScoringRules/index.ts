@@ -45,6 +45,7 @@ import {
   allSimples,
 } from './rules-2pt.js';
 import { fourShiftedChows, threeKongs, allTerminalsAndHonors } from './rules-32pt.js';
+import { fourPureShiftedPungs, quadrupleChow } from './rules-48pt.js';
 import { outsideHand, fullyConcealedHand, twoMeldedKongs, lastOfItsKind } from './rules-4pt.js';
 import { allPungs, halfFlush, mixedShiftedChows, allTypes, meldedHand, twoDragonPungs } from './rules-6pt.js';
 import {
@@ -68,6 +69,7 @@ export * from './rules-12pt.js';
 export * from './rules-16pt.js';
 export * from './rules-24pt.js';
 export * from './rules-32pt.js';
+export * from './rules-48pt.js';
 
 export const mahjongScoringRules = [
   // 1 point
@@ -143,4 +145,7 @@ export const mahjongScoringRules = [
   fourShiftedChows,
   threeKongs,
   allTerminalsAndHonors,
+  // 48 points
+  quadrupleChow,
+  fourPureShiftedPungs,
 ];

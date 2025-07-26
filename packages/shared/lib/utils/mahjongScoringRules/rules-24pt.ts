@@ -96,7 +96,7 @@ export const pureShiftedPungs: MahjongScoringRule = {
         for (let k = j + 1; k < pungsAndKongs.length; k++) {
           const [p1, p2, p3] = [pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k]];
           if (p1.tile.type !== p2.tile.type || p1.tile.type !== p3.tile.type) continue;
-          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort((a, b) => a - b);
+          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort();
           const diff1 = values[1] - values[0];
           const diff2 = values[2] - values[1];
           // All differences must be 1 (shifted by one)
