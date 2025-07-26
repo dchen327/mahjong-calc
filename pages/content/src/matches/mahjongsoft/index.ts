@@ -215,7 +215,7 @@ handScoreStorage.subscribe(() => {
         checkButton.disabled = false;
         setTimeout(() => {
           checkButton.click();
-        }, 100);
+        }, 20);
       }
     } else {
       console.warn('[CEB] Points input element not found');

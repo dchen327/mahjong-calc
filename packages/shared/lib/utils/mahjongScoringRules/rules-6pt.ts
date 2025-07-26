@@ -1,13 +1,4 @@
-import {
-  getPungs,
-  getKongs,
-  getPairs,
-  getChows,
-  getAllTilesFromGrouping,
-  isHonor,
-  parseTile,
-  isSameTile,
-} from '../mahjongTile.js';
+import { getPungs, getKongs, getPairs, getChows, getAllTilesFromGrouping, isHonor } from '../mahjongTile.js';
 import type { MahjongScoringRule, TileType } from '../types.js';
 
 // 6 point rules
@@ -86,16 +77,8 @@ export const meldedHand: MahjongScoringRule = {
   points: 6,
   excludes: ['13. Pair Wait'],
   evaluate: (grouping, gameState) => {
-    const meldedGroups = grouping.filter(group => group.kind !== 'pair' && !group.concealed);
-    const pairs = getPairs(grouping);
-    const winningTile = parseTile(gameState.winningTile);
-    // Ensure there is exactly one pair and the winning tile matches the pair
-    return meldedGroups.length === 4 &&
-      gameState.winFromDiscard &&
-      pairs.length === 1 &&
-      isSameTile([pairs[0].tile, winningTile])
-      ? 1
-      : 0;
+    const meldedGroups = grouping.filter(group => group.kind !== 'pair' && group.declaredInGame);
+    return meldedGroups.length === 4 && gameState.winFromDiscard ? 1 : 0;
   },
 };
 
