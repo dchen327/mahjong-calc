@@ -338,6 +338,75 @@ const scoreGrouping = (
     final = nextFinal;
   }
 
+  // Third pass: enforce group usage constraints
+  // Rule: When forming a new scoring pattern, at least one group must be "fresh" (not yet used)
+  // Collect all scoring instances from all rules, then process them optimally
+  // The Account­Once Principle ("Exclusionary rule"): When you have combined some
+  // sets to create a fan, you can only combine any remaining sets once with a set that has already been used
+  final.sort((a, b) => b.rule.points - a.rule.points);
+
+  // Collect instances per rule
+  type ScoringInstance = { rule: (typeof final)[number]; groups: number[]; ruleIdx: number };
+  const instancesByRule: ScoringInstance[][] = [];
+  const rulesWithoutGroups: typeof final = [];
+
+  for (let ruleIdx = 0; ruleIdx < final.length; ruleIdx++) {
+    const matchedRule = final[ruleIdx];
+    if (matchedRule.rule.getUsedGroupsPerInstance) {
+      const instanceGroups = matchedRule.rule.getUsedGroupsPerInstance(grouping, gameState);
+      const ruleInstances = instanceGroups.map(groups => ({ rule: matchedRule, groups, ruleIdx }));
+      if (ruleInstances.length > 0) {
+        instancesByRule.push(ruleInstances);
+      }
+    } else {
+      rulesWithoutGroups.push(matchedRule);
+    }
+  }
+
+  // Sort rules by points (descending)
+  instancesByRule.sort((a, b) => b[0].rule.rule.points - a[0].rule.rule.points);
+
+  // Process instances in round-robin fashion to maximize interleaving
+  const usedGroups = new Set<number>();
+  const instanceCounts = new Map<string, number>();
+  const instanceIndices = instancesByRule.map(() => 0);
+
+  let madeProgress = true;
+  while (madeProgress) {
+    madeProgress = false;
+    for (let i = 0; i < instancesByRule.length; i++) {
+      const instances = instancesByRule[i];
+      while (instanceIndices[i] < instances.length) {
+        const instance = instances[instanceIndices[i]];
+        const hasFreshGroup = instance.groups.some(g => !usedGroups.has(g));
+        if (hasFreshGroup) {
+          for (const g of instance.groups) {
+            usedGroups.add(g);
+          }
+          const ruleName = instance.rule.rule.name;
+          instanceCounts.set(ruleName, (instanceCounts.get(ruleName) || 0) + 1);
+          instanceIndices[i]++;
+          madeProgress = true;
+          break; // Move to next rule for round-robin
+        } else {
+          instanceIndices[i]++;
+        }
+      }
+    }
+  }
+
+  // Build final list from instance counts
+  const validRules: typeof final = [...rulesWithoutGroups];
+  for (const matchedRule of final) {
+    if (matchedRule.rule.getUsedGroupsPerInstance) {
+      const count = instanceCounts.get(matchedRule.rule.name) || 0;
+      if (count > 0) {
+        validRules.push({ ...matchedRule, quant: count });
+      }
+    }
+  }
+  final = validRules;
+
   // Edge cases
   // If 48. Big Three Winds, check for pung of terminals and add back
   if (final.some(m => m.rule.name === '48. Big Three Winds')) {

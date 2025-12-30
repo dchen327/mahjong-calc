@@ -4,7 +4,8 @@ import {
   isSameChow,
   isMixedChow,
   isShortStraight,
-  sortChows,
+  isTwoTerminalChows,
+  findChowPairs,
   getPungs,
   getKongs,
   getPairs,
@@ -39,66 +40,24 @@ export const pureDoubleChow: MahjongScoringRule = {
 export const mixedDoubleChow: MahjongScoringRule = {
   name: '2. Mixed Double Chow',
   points: 1,
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    const used = Array(chows.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      if (used[i]) continue;
-      for (let j = i + 1; j < chows.length; j++) {
-        if (!used[j] && isMixedChow(chows[i], chows[j])) {
-          used[i] = used[j] = true;
-          count++;
-          break;
-        }
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findChowPairs(grouping, isMixedChow).length,
+  getUsedGroupsPerInstance: grouping => findChowPairs(grouping, isMixedChow),
 };
 
 // Short Straight - Two Chows that form a 6-tile straight.
 export const shortStraight: MahjongScoringRule = {
   name: '3. Short Straight',
   points: 1,
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    const used = Array(chows.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      if (used[i]) continue;
-      for (let j = i + 1; j < chows.length; j++) {
-        if (!used[j] && isShortStraight(chows[i], chows[j])) {
-          used[i] = used[j] = true;
-          count++;
-          break;
-        }
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findChowPairs(grouping, isShortStraight).length,
+  getUsedGroupsPerInstance: grouping => findChowPairs(grouping, isShortStraight),
 };
 
 // Two Terminal Chows - A Chow of 1,2,3 and a Chow of 7,8,9 in the same suit.
 export const twoTerminalChows: MahjongScoringRule = {
   name: '4. Two Terminal Chows',
   points: 1,
-  evaluate: grouping => {
-    const chows = sortChows(getChows(grouping));
-    const used = Array(chows.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      if (used[i] || chows[i].tile.value !== 1) continue;
-      for (let j = 0; j < chows.length; j++) {
-        if (i !== j && !used[j] && chows[j].tile.type === chows[i].tile.type && chows[j].tile.value === 7) {
-          used[i] = used[j] = true;
-          count++;
-          break;
-        }
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findChowPairs(grouping, isTwoTerminalChows).length,
+  getUsedGroupsPerInstance: grouping => findChowPairs(grouping, isTwoTerminalChows),
 };
 
 // Pung of Terminals or Honors - A Pung or Kong of 1's, 9's, or Winds that are not your Seat Wind or Prevalent Wind.
@@ -177,6 +136,7 @@ export const edgeWait: MahjongScoringRule = {
 };
 
 // Closed Wait - Winning on the middle tile of a Chow. For instance a 3 to form a Chow of 2,3,4.
+// Note: Wait patterns don't count toward group usage limits - they describe the winning condition, not a group combination
 export const closedWait: MahjongScoringRule = {
   name: '12. Closed Wait',
   points: 1,

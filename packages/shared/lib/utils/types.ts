@@ -83,4 +83,9 @@ export interface MahjongScoringRule {
   points: number;
   evaluate: (grouping: MahjongGroup[], gameState: MahjongGameState) => number;
   excludes?: string[];
+  // Returns groups used by each instance of this rule (for enforcing group usage constraints)
+  // Returns array of group-index arrays, one per scoring instance
+  // e.g., [[0, 2], [1, 3]] means 2 instances, first uses groups 0,2, second uses groups 1,3
+  // If not provided, the rule doesn't use specific groups (e.g., "All Chows", "All Pungs")
+  getUsedGroupsPerInstance?: (grouping: MahjongGroup[], gameState: MahjongGameState) => number[][];
 }

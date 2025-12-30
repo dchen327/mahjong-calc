@@ -1,4 +1,11 @@
-import { getChows, getPungs, getKongs, getAllTilesFromGrouping, toString } from '../mahjongTile.js';
+import {
+  getChows,
+  getPungs,
+  getKongs,
+  getAllTilesFromGrouping,
+  toString,
+  findMixedStraightInstances,
+} from '../mahjongTile.js';
 import type { MahjongScoringRule } from '../types.js';
 
 // 8 point rules
@@ -6,33 +13,8 @@ import type { MahjongScoringRule } from '../types.js';
 export const mixedStraight: MahjongScoringRule = {
   name: '34. Mixed Straight',
   points: 8,
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    const used = Array(chows.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      if (used[i]) continue;
-      for (let j = 0; j < chows.length; j++) {
-        if (i === j || used[j]) continue;
-        for (let k = 0; k < chows.length; k++) {
-          if (i === k || j === k || used[k]) continue;
-          const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
-          const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
-          const allDifferentSuits = new Set(suits).size === 3;
-          // ensure values are [1, 4, 7]
-          const isStraight = values[0] === 1 && values[1] === 4 && values[2] === 7;
-          if (allDifferentSuits && isStraight) {
-            used[i] = used[j] = used[k] = true;
-            count++;
-            break;
-          }
-        }
-        if (used[i]) break;
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findMixedStraightInstances(grouping).length,
+  getUsedGroupsPerInstance: grouping => findMixedStraightInstances(grouping),
 };
 
 // Reversible Tiles - The hand is composed of only Reversible (1,2,3,4,5,8,9 Circle; 2,4,5,6,8,9 Bamboo; White Dragon) tiles.

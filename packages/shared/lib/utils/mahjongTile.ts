@@ -103,6 +103,60 @@ export const isShortStraight = (a: ChowGroup, b: ChowGroup): boolean => {
   return Math.abs(a.tile.value - b.tile.value) === 3;
 };
 
+export const isTwoTerminalChows = (a: ChowGroup, b: ChowGroup): boolean =>
+  a.tile.type === b.tile.type &&
+  ((a.tile.value === 1 && b.tile.value === 7) || (a.tile.value === 7 && b.tile.value === 1));
+
+// Generic helper to find chow pairs matching a condition, returns group indices per instance
+export const findChowPairs = (
+  grouping: MahjongGroup[],
+  matcher: (a: ChowGroup, b: ChowGroup) => boolean,
+): number[][] => {
+  const chows = getChows(grouping);
+  const chowIndices = grouping.map((g, idx) => (g.kind === 'chow' ? idx : -1)).filter(idx => idx !== -1);
+  const used = Array(chows.length).fill(false);
+  const result: number[][] = [];
+  for (let i = 0; i < chows.length; i++) {
+    if (used[i]) continue;
+    for (let j = i + 1; j < chows.length; j++) {
+      if (!used[j] && matcher(chows[i], chows[j])) {
+        used[i] = used[j] = true;
+        result.push([chowIndices[i], chowIndices[j]]);
+        break;
+      }
+    }
+  }
+  return result;
+};
+
+// Helper to find mixed straight - returns group indices per instance
+export const findMixedStraightInstances = (grouping: MahjongGroup[]): number[][] => {
+  const chows = getChows(grouping);
+  const chowIndices = grouping.map((g, idx) => (g.kind === 'chow' ? idx : -1)).filter(idx => idx !== -1);
+  const used = Array(chows.length).fill(false);
+  const result: number[][] = [];
+
+  for (let i = 0; i < chows.length; i++) {
+    if (used[i]) continue;
+    for (let j = 0; j < chows.length; j++) {
+      if (i === j || used[j]) continue;
+      for (let k = 0; k < chows.length; k++) {
+        if (i === k || j === k || used[k]) continue;
+        const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
+        const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
+        const suits = new Set([c1.tile.type, c2.tile.type, c3.tile.type]);
+        if (suits.size === 3 && values[0] === 1 && values[1] === 4 && values[2] === 7) {
+          used[i] = used[j] = used[k] = true;
+          result.push([chowIndices[i], chowIndices[j], chowIndices[k]]);
+          break;
+        }
+      }
+      if (used[i]) break;
+    }
+  }
+  return result;
+};
+
 export const isTerminalOrHonorPung = (
   group: PungGroup | KongGroup,
   seatWind?: string | null,
