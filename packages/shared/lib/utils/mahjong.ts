@@ -330,12 +330,6 @@ const scoreGrouping = (
       // Check if this rule is excluded by any rule already confirmed in nextFinal
       const isExcluded = nextFinal.some(other => other.rule.excludes && other.rule.excludes.includes(rule.rule.name));
       if (!isExcluded) {
-        // Before adding this rule, remove any rules from nextFinal that this rule excludes
-        const rulesToRemove = rule.rule.excludes || [];
-        const beforeLength = nextFinal.length;
-        nextFinal.splice(0, nextFinal.length, ...nextFinal.filter(r => !rulesToRemove.includes(r.rule.name)));
-        if (nextFinal.length < beforeLength) changed = true;
-
         nextFinal.push(rule);
       } else {
         changed = true; // We excluded something, so we need to iterate again

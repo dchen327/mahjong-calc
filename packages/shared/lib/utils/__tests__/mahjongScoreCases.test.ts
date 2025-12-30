@@ -966,6 +966,26 @@ const cases = [
       winningTile: 'wan-6',
     },
   },
+  {
+    name: 'Test 29',
+    expected: 6,
+    state: {
+      concealedTiles: ['wan-8', 'wan-9', 'wan-6', 'wan-7', 'wan-8', 'wan-1', 'wan-1'],
+      declaredSets: [
+        ['wind-west', 'wind-west', 'wind-west'],
+        ['circle-9', 'circle-9', 'circle-9', 'circle-9'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'wind-north',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'wind-south',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wan-7',
+    },
+  },
 ];
 
 const filter: string[] =

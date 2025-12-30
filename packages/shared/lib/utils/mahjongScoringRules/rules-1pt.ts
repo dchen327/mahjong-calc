@@ -161,6 +161,7 @@ export const selfDrawn: MahjongScoringRule = {
 export const edgeWait: MahjongScoringRule = {
   name: '11. Edge Wait',
   points: 1,
+  excludes: ['12. Closed Wait', '13. Pair Wait'],
   evaluate: (grouping, gameState) => {
     const waitingTiles = getWaitTiles(gameState);
     if (waitingTiles.length > 1) return 0;
@@ -179,6 +180,7 @@ export const edgeWait: MahjongScoringRule = {
 export const closedWait: MahjongScoringRule = {
   name: '12. Closed Wait',
   points: 1,
+  excludes: ['11. Edge Wait', '13. Pair Wait'],
   evaluate: (grouping, gameState) => {
     const waitingTiles = getWaitTiles(gameState);
     if (waitingTiles.length > 1) return 0;
