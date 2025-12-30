@@ -320,9 +320,20 @@ if (AUTO_TEST_MODE && scoreElement) {
         return;
       }
 
-      const nextButton = document.getElementById('next_button') as HTMLButtonElement;
+      // Wait for next button to become available (up to 5 seconds for slow hands like Nine Gates)
+      let nextButton = document.getElementById('next_button') as HTMLButtonElement;
+      let retries = 0;
+      const maxRetries = 10;
+      const retryDelay = 500;
+
+      while ((!nextButton || nextButton.disabled) && retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        nextButton = document.getElementById('next_button') as HTMLButtonElement;
+        retries++;
+      }
+
       if (!nextButton || nextButton.disabled) {
-        console.log('🧪 AUTO-TEST STOPPED: Next button not available');
+        console.log(`🧪 AUTO-TEST STOPPED: Next button not available after ${maxRetries * retryDelay}ms wait`);
         autoTestRunning = false;
         return;
       }
@@ -332,7 +343,7 @@ if (AUTO_TEST_MODE && scoreElement) {
       // Click next button
       nextButton.click();
 
-      // Wait for the extension to process (parse -> calculate -> auto-fill -> check -> score updates)
+      // Wait for the extension to process (parse → calculate → auto-fill → check → score updates)
       // We wait a bit longer to ensure the score counter has time to update
       await new Promise(resolve => setTimeout(resolve, AUTO_TEST_DELAY_MS));
 
