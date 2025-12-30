@@ -27,19 +27,20 @@ export const fullyConcealedHand: MahjongScoringRule = {
   },
 };
 
-// Two Melded Kongs - Two Kongs. Note that this can combine with Concealed Kong for a total of 6 points.
+// Two Melded Kongs - Two Kongs where at least one is melded (not concealed)
+// Note: This excludes "Melded Kong" (1pt), and combines with "Concealed Kong" (2pt) for 6 total when 1 melded + 1 concealed
+// If both kongs are concealed, use "Two Concealed Kongs" (8pt) instead
 export const twoMeldedKongs: MahjongScoringRule = {
   name: '26. Two Melded Kongs',
   points: 4,
   excludes: ['6. Melded Kong'],
   evaluate: grouping => {
-    const meldedKongs = getKongs(grouping);
-    // return 1 if there are 2 not concealed kongs or 1 concealed and 1 not concealed
-    return meldedKongs.filter(kong => !kong.concealed).length >= 2 ||
-      (meldedKongs.filter(kong => kong.concealed).length === 1 &&
-        meldedKongs.filter(kong => !kong.concealed).length === 1)
-      ? 1
-      : 0;
+    const allKongs = getKongs(grouping);
+    if (allKongs.length < 2) return 0;
+
+    // At least one kong must be melded (not concealed)
+    const hasMeldedKong = allKongs.some(kong => !kong.concealed);
+    return hasMeldedKong ? 1 : 0;
   },
 };
 

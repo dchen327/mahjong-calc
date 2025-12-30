@@ -3,6 +3,11 @@ import type { MahjongGameState } from '@extension/storage/lib/base';
 
 console.log('[CEB] mahjong soft content script loaded');
 
+// 🧪 AUTO-TEST MODE: Set to true to automatically test hands until a wrong answer is found
+const AUTO_TEST_MODE = true;
+const AUTO_TEST_MAX_ITERATIONS = 300;
+const AUTO_TEST_DELAY_MS = 300;
+
 const cards = [
   'flipped',
   'bamboo-1',
@@ -199,6 +204,176 @@ if (!handElement) {
   [row1Table, row2Table, row3Table].forEach(table => {
     if (table) observer.observe(table, observerConfig);
   });
+}
+
+// Parse expected answer from fans_table
+const parseExpectedAnswer = () => {
+  const fansTable = document.getElementById('fans_table');
+  if (!fansTable) return null;
+
+  const rows = Array.from(fansTable.querySelectorAll('tr'));
+  const rules: { name: string; quantity: number; points: number }[] = [];
+  let totalPoints = 0;
+
+  for (const row of rows) {
+    const cells = row.querySelectorAll('td');
+    if (cells.length === 4) {
+      const name = cells[1].textContent?.trim() || '';
+      const quantity = parseInt(cells[2].textContent || '0');
+      const points = parseInt(cells[3].textContent || '0');
+
+      if (name === 'Total') {
+        totalPoints = points;
+      } else if (name && !name.includes('Fans')) {
+        rules.push({ name, quantity, points });
+      }
+    }
+  }
+
+  return { rules, totalPoints };
+};
+
+// Monitor score element to detect when we get the answer wrong
+let previousWrongCount = 0;
+
+const scoreElement = document.getElementById('score');
+if (scoreElement) {
+  const scoreObserver = new MutationObserver(() => {
+    const scoreText = scoreElement.textContent || '0:0';
+    const [correct, wrong] = scoreText.split(':').map(Number);
+
+    if (wrong > previousWrongCount) {
+      // Wrong counter increased! Log the details
+      const currentScore = handScoreStorage.getSnapshot();
+      const currentGameState = mahjongGameStateStorage.getSnapshot();
+      const expectedAnswer = parseExpectedAnswer();
+
+      console.log('❌ WRONG ANSWER DETECTED ❌');
+      console.log(`Score: Expected ${expectedAnswer?.totalPoints || '?'} vs Calculated ${currentScore?.score || 0}`);
+
+      console.log('\n📊 YOUR CALCULATED RULES:');
+      console.table(
+        currentScore?.matched.map(rule => ({
+          Name: rule.name,
+          Quantity: rule.quant,
+          Points: rule.points,
+        })) || [],
+      );
+
+      if (expectedAnswer) {
+        console.log('\n✅ MAHJONGSOFT EXPECTED RULES:');
+        console.table(
+          expectedAnswer.rules.map(rule => ({
+            Name: rule.name,
+            Quantity: rule.quantity,
+            Points: rule.points,
+          })),
+        );
+      }
+
+      console.log('\n🔍 Game State:', currentGameState);
+
+      previousWrongCount = wrong;
+    } else if (correct > 0 || wrong > 0) {
+      // Update tracking but don't log
+      previousWrongCount = wrong;
+    }
+  });
+
+  scoreObserver.observe(scoreElement, {
+    childList: true,
+    characterData: true,
+    subtree: true,
+  });
+
+  console.log('[CEB] Score monitoring enabled. Wrong answers will be logged.');
+}
+
+// Auto-test mode: automatically click Next until we find a wrong answer
+// Waits for user to click Next manually once, then takes over
+if (AUTO_TEST_MODE && scoreElement) {
+  let autoTestRunning = false;
+  let autoTestIteration = 0;
+  let autoTestInitialWrongCount = 0;
+  let autoTestInitialized = false;
+
+  const startAutoTest = () => {
+    if (autoTestRunning) return;
+    autoTestRunning = true;
+    autoTestIteration = 0;
+
+    // Get initial wrong count
+    const initialScoreText = scoreElement.textContent || '0:0';
+    const [, initialWrong] = initialScoreText.split(':').map(Number);
+    autoTestInitialWrongCount = initialWrong;
+    previousWrongCount = initialWrong;
+
+    console.log(`🧪 AUTO-TEST MODE STARTED`);
+    console.log(`Initial wrong count: ${initialWrong}`);
+    console.log(`Max iterations: ${AUTO_TEST_MAX_ITERATIONS}`);
+    console.log(`Delay between clicks: ${AUTO_TEST_DELAY_MS}ms`);
+
+    const clickNext = async () => {
+      if (autoTestIteration >= AUTO_TEST_MAX_ITERATIONS) {
+        console.log(`🧪 AUTO-TEST COMPLETE: Reached max iterations (${AUTO_TEST_MAX_ITERATIONS})`);
+        autoTestRunning = false;
+        return;
+      }
+
+      const nextButton = document.getElementById('next_button') as HTMLButtonElement;
+      if (!nextButton || nextButton.disabled) {
+        console.log('🧪 AUTO-TEST STOPPED: Next button not available');
+        autoTestRunning = false;
+        return;
+      }
+
+      autoTestIteration++;
+
+      // Click next button
+      nextButton.click();
+
+      // Wait for the extension to process (parse -> calculate -> auto-fill -> check -> score updates)
+      // We wait a bit longer to ensure the score counter has time to update
+      await new Promise(resolve => setTimeout(resolve, AUTO_TEST_DELAY_MS));
+
+      // Check if wrong count increased (this means we found an error)
+      const currentScoreText = scoreElement.textContent || '0:0';
+      const [, currentWrong] = currentScoreText.split(':').map(Number);
+      if (currentWrong > autoTestInitialWrongCount) {
+        console.log(`🧪 AUTO-TEST STOPPED: Wrong answer detected at iteration ${autoTestIteration}`);
+        autoTestRunning = false;
+        return;
+      }
+
+      // Continue to next iteration
+      clickNext();
+    };
+
+    // Start clicking after delay to let first manual click process
+    setTimeout(() => clickNext(), AUTO_TEST_DELAY_MS + 200);
+  };
+
+  // Listen for the first manual click on Next button
+  const nextButton = document.getElementById('next_button') as HTMLButtonElement;
+  if (nextButton) {
+    const onFirstClick = () => {
+      if (!autoTestInitialized) {
+        autoTestInitialized = true;
+        console.log('🧪 AUTO-TEST MODE ENABLED: Will start after this hand is processed');
+        // Remove this listener so it only triggers once
+        nextButton.removeEventListener('click', onFirstClick);
+        // Start auto-test after giving time for the manual click to process
+        setTimeout(() => startAutoTest(), AUTO_TEST_DELAY_MS + 500);
+      }
+    };
+
+    nextButton.addEventListener('click', onFirstClick);
+    console.log(
+      '🧪 AUTO-TEST MODE READY: Click "Next" to start automated testing (max iterations: ' +
+        AUTO_TEST_MAX_ITERATIONS +
+        ')',
+    );
+  }
 }
 
 // Subscribe to handScoreStorage changes

@@ -71,13 +71,17 @@ export const allTypes: MahjongScoringRule = {
   },
 };
 
-// Melded Hand - Four melded groups and is won by discard.
+// Melded Hand - Four melded groups (declared before winning) and is won by discard.
+// A group is "melded" if it was declared/exposed before winning (declaredInGame)
+// A concealed kong is NOT melded even if declared during the game
+// The winning tile must complete the pair (since all 4 groups are already melded)
 export const meldedHand: MahjongScoringRule = {
   name: '32. Melded Hand',
   points: 6,
   excludes: ['13. Pair Wait'],
   evaluate: (grouping, gameState) => {
-    const meldedGroups = grouping.filter(group => group.kind !== 'pair' && group.declaredInGame);
+    // Only count groups that were declared before winning (not groups formed with winning tile)
+    const meldedGroups = grouping.filter(group => group.kind !== 'pair' && group.declaredInGame && !group.concealed);
     return meldedGroups.length === 4 && gameState.winFromDiscard ? 1 : 0;
   },
 };
