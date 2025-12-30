@@ -15,7 +15,7 @@ export const fourShiftedChows: MahjongScoringRule = {
     if (!chows.every(chow => chow.tile.type === suit)) return 0;
     // sort and check if shifted by 1 or 2
     const values = chows.map(chow => Number(chow.tile.value)).sort((a, b) => a - b);
-    const diffs = values.map((v, i) => (i > 0 ? v - values[i - 1] : 0));
+    const diffs = values.slice(1).map((v, i) => v - values[i]);
     const isShiftedByOne = diffs.every(diff => diff === 1);
     const isShiftedByTwo = diffs.every(diff => diff === 2);
     return isShiftedByOne || isShiftedByTwo ? 1 : 0;

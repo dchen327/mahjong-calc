@@ -5,8 +5,8 @@ console.log('[CEB] mahjong soft content script loaded');
 
 // 🧪 AUTO-TEST MODE: Set to true to automatically test hands until a wrong answer is found
 const AUTO_TEST_MODE = true;
-const AUTO_TEST_MAX_ITERATIONS = 2000;
-const AUTO_TEST_DELAY_MS = 200;
+const AUTO_TEST_MAX_ITERATIONS = 10000;
+const AUTO_TEST_DELAY_MS = 50;
 
 const cards = [
   'flipped',
@@ -323,7 +323,7 @@ if (AUTO_TEST_MODE && scoreElement) {
       // Wait for next button to become available (up to 5 seconds for slow hands like Nine Gates)
       let nextButton = document.getElementById('next_button') as HTMLButtonElement;
       let retries = 0;
-      const maxRetries = 10;
+      const maxRetries = 20;
       const retryDelay = 500;
 
       while ((!nextButton || nextButton.disabled) && retries < maxRetries) {
