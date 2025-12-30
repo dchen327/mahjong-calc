@@ -47,6 +47,7 @@ export const nineGates: MahjongScoringRule = {
   name: '78. Nine Gates',
   points: 88,
   excludes: [
+    '8. No Honor Tiles',
     '5. Pung of Terminals or Honors',
     '7. One Voided Suit',
     '17. Concealed Hand',
@@ -75,7 +76,15 @@ export const nineGates: MahjongScoringRule = {
 export const fourKongs: MahjongScoringRule = {
   name: '79. Four Kongs',
   points: 88,
-  excludes: ['6. Melded Kong', '13. Pair Wait', '26. Two Melded Kongs', '28. All Pungs', '65. Three Kongs'],
+  excludes: [
+    '6. Melded Kong',
+    '13. Pair Wait',
+    '22. Concealed Kong',
+    '26. Two Melded Kongs',
+    '28. All Pungs',
+    '38. Two Concealed Kongs',
+    '65. Three Kongs',
+  ],
   evaluate: grouping => {
     const kongs = getKongs(grouping);
     return kongs.length === 4 ? 1 : 0;

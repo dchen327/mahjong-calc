@@ -26,7 +26,7 @@ export const fourShiftedChows: MahjongScoringRule = {
 export const threeKongs: MahjongScoringRule = {
   name: '65. Three Kongs',
   points: 32,
-  excludes: ['6. Melded Kong', '26. Two Melded Kongs', '38. Two Concealed Kongs'],
+  excludes: ['6. Melded Kong', '22. Concealed Kong', '26. Two Melded Kongs', '38. Two Concealed Kongs'],
   evaluate: grouping => {
     const kongs = grouping.filter(g => g.kind === 'kong') as KongGroup[];
     return kongs.length === 3 ? 1 : 0;

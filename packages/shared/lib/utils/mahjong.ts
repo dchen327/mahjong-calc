@@ -314,10 +314,35 @@ const scoreGrouping = (
     })
     .filter(Boolean) as { rule: (typeof mahjongScoringRules)[number]; quant: number }[];
 
-  // Second pass: filter out rules that are excluded by another matched rule
-  const final = matched.filter(
-    m => !matched.some(other => other !== m && other.rule.excludes && other.rule.excludes.includes(m.rule.name)),
-  );
+  // Second pass: apply exclusions iteratively from highest to lowest points
+  // Keep iterating until no more rules are excluded
+  let final = [...matched];
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    // Sort by points descending so we process highest scoring rules first
+    final.sort((a, b) => b.rule.points - a.rule.points);
+
+    // Check each rule to see if it should be excluded by any higher-scoring rule that's already confirmed
+    const nextFinal: typeof final = [];
+    for (const rule of final) {
+      // Check if this rule is excluded by any rule already confirmed in nextFinal
+      const isExcluded = nextFinal.some(other => other.rule.excludes && other.rule.excludes.includes(rule.rule.name));
+      if (!isExcluded) {
+        // Before adding this rule, remove any rules from nextFinal that this rule excludes
+        const rulesToRemove = rule.rule.excludes || [];
+        const beforeLength = nextFinal.length;
+        nextFinal.splice(0, nextFinal.length, ...nextFinal.filter(r => !rulesToRemove.includes(r.rule.name)));
+        if (nextFinal.length < beforeLength) changed = true;
+
+        nextFinal.push(rule);
+      } else {
+        changed = true; // We excluded something, so we need to iterate again
+      }
+    }
+    final = nextFinal;
+  }
 
   // Edge cases
   // If 48. Big Three Winds, check for pung of terminals and add back

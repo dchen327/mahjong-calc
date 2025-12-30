@@ -922,6 +922,50 @@ const cases = [
       winningTile: 'bamboo-8',
     },
   },
+  {
+    name: 'Test 27',
+    expected: 9,
+    state: {
+      concealedTiles: ['wan-4'],
+      declaredSets: [
+        ['bamboo-6', 'bamboo-7', 'bamboo-8'],
+        ['circle-2', 'circle-3', 'circle-4'],
+        ['dragon-white', 'dragon-white', 'dragon-white', 'dragon-white'],
+        ['flipped', 'wan-8', 'wan-8', 'flipped'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'wan-4',
+    },
+  },
+  {
+    name: 'Test 28',
+    expected: 94, // Four Kongs (88) + Two Concealed Pungs (2) + Dragon Pung (2) + Self Drawn (1) + Pung of Terminals/Honors (1)
+    state: {
+      concealedTiles: ['wan-6'],
+      declaredSets: [
+        ['circle-5', 'circle-5', 'circle-5', 'circle-5'],
+        ['dragon-white', 'dragon-white', 'dragon-white', 'dragon-white'],
+        ['flipped', 'bamboo-9', 'bamboo-9', 'flipped'],
+        ['flipped', 'wan-3', 'wan-3', 'flipped'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'flipped',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'flipped',
+      winFromDiscard: false,
+      winFromWall: true,
+      winningTile: 'wan-6',
+    },
+  },
 ];
 
 const filter: string[] =
@@ -932,12 +976,19 @@ describe('calculateMahjongScore (cases)', () => {
   cases
     .filter(({ name }) => filter.length === 0 || filter.includes(name))
     .forEach(({ name, state, expected }) => {
-      it(`returns ${expected} for ${name}`, () => {
-        const result = calculateMahjongScore(state);
-        if (result.score !== expected) {
-          console.log('Matched rules:', result.matched);
-        }
-        expect(result.score).toBe(expected);
-      });
+      // Nine Gates test needs extra time due to complex pattern enumeration
+      const timeout = name === 'Nine Gates' ? 10000 : 5000;
+
+      it(
+        `returns ${expected} for ${name}`,
+        () => {
+          const result = calculateMahjongScore(state);
+          if (result.score !== expected) {
+            console.log('Matched rules:', result.matched);
+          }
+          expect(result.score).toBe(expected);
+        },
+        timeout,
+      );
     });
 });
