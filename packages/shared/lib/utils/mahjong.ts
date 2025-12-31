@@ -467,11 +467,18 @@ const scoreGrouping = (
   }
 
   // Build final list from best instance counts
+  // Apply Non-Identical Principle: Rules using 3+ groups can only score once
   const validRules: typeof final = [...rulesWithoutGroups];
   for (const matchedRule of final) {
     if (matchedRule.rule.getUsedGroupsPerInstance) {
-      const count = bestInstanceCounts.get(matchedRule.rule.name) || 0;
+      let count = bestInstanceCounts.get(matchedRule.rule.name) || 0;
       if (count > 0) {
+        // Check the number of groups used by this rule
+        const instances = matchedRule.rule.getUsedGroupsPerInstance(grouping, gameState);
+        if (instances.length > 0 && instances[0].length >= 3) {
+          // Rules using 3+ groups can only score once (Non-Identical Principle)
+          count = 1;
+        }
         validRules.push({ ...matchedRule, quant: count });
       }
     }
