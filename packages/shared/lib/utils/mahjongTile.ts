@@ -107,56 +107,48 @@ export const isTwoTerminalChows = (a: ChowGroup, b: ChowGroup): boolean =>
   a.tile.type === b.tile.type &&
   ((a.tile.value === 1 && b.tile.value === 7) || (a.tile.value === 7 && b.tile.value === 1));
 
-// Generic helper to find chow pairs matching a condition, returns group indices per instance
+// Generic helper to find chow pairs matching a condition, returns ALL possible group indices per instance
+// Note: Returns all possible pairings, even overlapping ones - the exclusionary rule is applied at scoring time
 export const findChowPairs = (
   grouping: MahjongGroup[],
   matcher: (a: ChowGroup, b: ChowGroup) => boolean,
 ): number[][] => {
   const chows = getChows(grouping);
   const chowIndices = grouping.map((g, idx) => (g.kind === 'chow' ? idx : -1)).filter(idx => idx !== -1);
-  const used = Array(chows.length).fill(false);
   const result: number[][] = [];
   for (let i = 0; i < chows.length; i++) {
-    if (used[i]) continue;
     for (let j = i + 1; j < chows.length; j++) {
-      if (!used[j] && matcher(chows[i], chows[j])) {
-        used[i] = used[j] = true;
+      if (matcher(chows[i], chows[j])) {
         result.push([chowIndices[i], chowIndices[j]]);
-        break;
       }
     }
   }
   return result;
 };
 
-// Generic helper to find chow triplets matching a condition, returns group indices per instance
+// Generic helper to find chow triplets matching a condition, returns ALL possible group indices per instance
+// Note: Returns all possible triplets, even overlapping ones - the exclusionary rule is applied at scoring time
 export const findChowTriplets = (
   grouping: MahjongGroup[],
   matcher: (a: ChowGroup, b: ChowGroup, c: ChowGroup) => boolean,
 ): number[][] => {
   const chows = getChows(grouping);
   const chowIndices = grouping.map((g, idx) => (g.kind === 'chow' ? idx : -1)).filter(idx => idx !== -1);
-  const used = Array(chows.length).fill(false);
   const result: number[][] = [];
   for (let i = 0; i < chows.length; i++) {
-    if (used[i]) continue;
-    for (let j = 0; j < chows.length; j++) {
-      if (i === j || used[j]) continue;
-      for (let k = 0; k < chows.length; k++) {
-        if (i === k || j === k || used[k]) continue;
+    for (let j = i + 1; j < chows.length; j++) {
+      for (let k = j + 1; k < chows.length; k++) {
         if (matcher(chows[i], chows[j], chows[k])) {
-          used[i] = used[j] = used[k] = true;
           result.push([chowIndices[i], chowIndices[j], chowIndices[k]]);
-          break;
         }
       }
-      if (used[i]) break;
     }
   }
   return result;
 };
 
-// Generic helper to find pung/kong triplets matching a condition, returns group indices per instance
+// Generic helper to find pung/kong triplets matching a condition, returns ALL possible group indices per instance
+// Note: Returns all possible triplets, even overlapping ones - the exclusionary rule is applied at scoring time
 export const findPungTriplets = (
   grouping: MahjongGroup[],
   matcher: (a: PungGroup | KongGroup, b: PungGroup | KongGroup, c: PungGroup | KongGroup) => boolean,
@@ -167,21 +159,14 @@ export const findPungTriplets = (
   const pungIndices = grouping
     .map((g, idx) => (g.kind === 'pung' || g.kind === 'kong' ? idx : -1))
     .filter(idx => idx !== -1);
-  const used = Array(pungsAndKongs.length).fill(false);
   const result: number[][] = [];
   for (let i = 0; i < pungsAndKongs.length; i++) {
-    if (used[i]) continue;
-    for (let j = 0; j < pungsAndKongs.length; j++) {
-      if (i === j || used[j]) continue;
-      for (let k = 0; k < pungsAndKongs.length; k++) {
-        if (i === k || j === k || used[k]) continue;
+    for (let j = i + 1; j < pungsAndKongs.length; j++) {
+      for (let k = j + 1; k < pungsAndKongs.length; k++) {
         if (matcher(pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k])) {
-          used[i] = used[j] = used[k] = true;
           result.push([pungIndices[i], pungIndices[j], pungIndices[k]]);
-          break;
         }
       }
-      if (used[i]) break;
     }
   }
   return result;

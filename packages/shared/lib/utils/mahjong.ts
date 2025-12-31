@@ -339,10 +339,8 @@ const scoreGrouping = (
   }
 
   // Third pass: enforce group usage constraints
-  // Rule: When forming a new scoring pattern, at least one group must be "fresh" (not yet used)
-  // Collect all scoring instances from all rules, then process them optimally
-  // The Account­Once Principle ("Exclusionary rule"): When you have combined some
-  // sets to create a fan, you can only combine any remaining sets once with a set that has already been used
+  // Account-Once Principle: When scoring a pattern, at least one group must be "fresh" (not yet used)
+  // Process higher-point rules first to maximize score
   final.sort((a, b) => b.rule.points - a.rule.points);
 
   // Collect instances per rule
@@ -366,40 +364,113 @@ const scoreGrouping = (
   // Sort rules by points (descending)
   instancesByRule.sort((a, b) => b[0].rule.rule.points - a[0].rule.rule.points);
 
-  // Process instances in round-robin fashion to maximize interleaving
-  const usedGroups = new Set<number>();
-  const instanceCounts = new Map<string, number>();
-  const instanceIndices = instancesByRule.map(() => 0);
+  // Group rules by point value
+  const rulesByPoints = new Map<number, number[]>();
+  for (let i = 0; i < instancesByRule.length; i++) {
+    const points = instancesByRule[i][0].rule.rule.points;
+    if (!rulesByPoints.has(points)) {
+      rulesByPoints.set(points, []);
+    }
+    rulesByPoints.get(points)!.push(i);
+  }
 
-  let madeProgress = true;
-  while (madeProgress) {
-    madeProgress = false;
-    for (let i = 0; i < instancesByRule.length; i++) {
-      const instances = instancesByRule[i];
-      while (instanceIndices[i] < instances.length) {
-        const instance = instances[instanceIndices[i]];
-        const hasFreshGroup = instance.groups.some(g => !usedGroups.has(g));
-        if (hasFreshGroup) {
-          for (const g of instance.groups) {
-            usedGroups.add(g);
+  // Helper to try scoring with a specific ordering
+  const tryScoring = (ordering: number[]): Map<string, number> => {
+    const usedGroups = new Set<number>();
+    const instanceCounts = new Map<string, number>();
+    const instanceIndices = ordering.map(() => 0);
+
+    let madeProgress = true;
+    while (madeProgress) {
+      madeProgress = false;
+      for (let idx = 0; idx < ordering.length; idx++) {
+        const i = ordering[idx];
+        const instances = instancesByRule[i];
+        while (instanceIndices[idx] < instances.length) {
+          const instance = instances[instanceIndices[idx]];
+          const hasFreshGroup = instance.groups.some(g => !usedGroups.has(g));
+
+          if (hasFreshGroup) {
+            for (const g of instance.groups) {
+              usedGroups.add(g);
+            }
+            const ruleName = instance.rule.rule.name;
+            instanceCounts.set(ruleName, (instanceCounts.get(ruleName) || 0) + 1);
+            instanceIndices[idx]++;
+            madeProgress = true;
+            break;
+          } else {
+            instanceIndices[idx]++;
           }
-          const ruleName = instance.rule.rule.name;
-          instanceCounts.set(ruleName, (instanceCounts.get(ruleName) || 0) + 1);
-          instanceIndices[i]++;
-          madeProgress = true;
-          break; // Move to next rule for round-robin
-        } else {
-          instanceIndices[i]++;
         }
+      }
+    }
+    return instanceCounts;
+  };
+
+  // Helper to generate permutations
+  const permute = <T>(arr: T[]): T[][] => {
+    if (arr.length <= 1) return [arr];
+    const result: T[][] = [];
+    for (let i = 0; i < arr.length; i++) {
+      const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+      const perms = permute(rest);
+      for (const perm of perms) {
+        result.push([arr[i], ...perm]);
+      }
+    }
+    return result;
+  };
+
+  // Try all permutations within each point group and pick the best
+  let bestInstanceCounts = new Map<string, number>();
+  let bestScore = 0;
+
+  // Build all possible orderings by permuting within each point group
+  const pointGroups = Array.from(rulesByPoints.entries()).sort((a, b) => b[0] - a[0]);
+  const allPermutations: number[][] = [[]];
+
+  for (const [, ruleIndices] of pointGroups) {
+    if (ruleIndices.length <= 6) {
+      // Only permute if reasonable number (6! = 720)
+      const perms = permute(ruleIndices);
+      const newPermutations: number[][] = [];
+      for (const basePerm of allPermutations) {
+        for (const perm of perms) {
+          newPermutations.push([...basePerm, ...perm]);
+        }
+      }
+      allPermutations.length = 0;
+      allPermutations.push(...newPermutations);
+    } else {
+      // Too many to permute, just use original order
+      for (let i = 0; i < allPermutations.length; i++) {
+        allPermutations[i].push(...ruleIndices);
       }
     }
   }
 
-  // Build final list from instance counts
+  // Try each permutation and keep the best
+  for (const ordering of allPermutations) {
+    const instanceCounts = tryScoring(ordering);
+    let score = 0;
+    for (const [ruleName, count] of instanceCounts) {
+      const rule = final.find(r => r.rule.name === ruleName);
+      if (rule) {
+        score += rule.rule.points * count;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestInstanceCounts = instanceCounts;
+    }
+  }
+
+  // Build final list from best instance counts
   const validRules: typeof final = [...rulesWithoutGroups];
   for (const matchedRule of final) {
     if (matchedRule.rule.getUsedGroupsPerInstance) {
-      const count = instanceCounts.get(matchedRule.rule.name) || 0;
+      const count = bestInstanceCounts.get(matchedRule.rule.name) || 0;
       if (count > 0) {
         validRules.push({ ...matchedRule, quant: count });
       }
