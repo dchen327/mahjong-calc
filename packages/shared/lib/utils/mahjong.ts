@@ -485,16 +485,21 @@ const scoreGrouping = (
   }
   final = validRules;
 
-  // Edge cases
-  // If 48. Big Three Winds, check for pung of terminals and add back
+  // Edge case: Big Three Winds excludes Pung of Terminals or Honors UNLESS there's a non-wind terminal pung
   if (final.some(m => m.rule.name === '48. Big Three Winds')) {
     const hasTerminalPung = grouping.some(
       g => (g.kind === 'pung' || g.kind === 'kong') && !isHonor(g.tile) && (g.tile.value === 1 || g.tile.value === 9),
     );
     if (hasTerminalPung) {
-      // Add pungOfTerminalsOrHonors back in
-      const rule = mahjongScoringRules.find(r => r.name === '5. Pung of Terminals or Honors');
-      if (rule) final.push({ rule, quant: 1 });
+      // Add pungOfTerminalsOrHonors back in, but only if it's not excluded by any OTHER rule (not Big Three Winds)
+      const pungRuleName = '5. Pung of Terminals or Honors';
+      const wouldBeExcluded = final.some(
+        m => m.rule.name !== '48. Big Three Winds' && m.rule.excludes && m.rule.excludes.includes(pungRuleName),
+      );
+      if (!wouldBeExcluded) {
+        const rule = mahjongScoringRules.find(r => r.name === pungRuleName);
+        if (rule) final.push({ rule, quant: 1 });
+      }
     }
   }
 

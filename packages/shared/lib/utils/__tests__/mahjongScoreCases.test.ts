@@ -1170,6 +1170,34 @@ const cases = [
       winningTile: 'bamboo-2',
     },
   },
+  {
+    name: 'Test 38',
+    expected: 53,
+    state: {
+      concealedTiles: [
+        'wind-south',
+        'wind-south',
+        'wind-west',
+        'wind-west',
+        'wind-west',
+        'dragon-green',
+        'dragon-green',
+      ],
+      declaredSets: [
+        ['wind-north', 'wind-north', 'wind-north'],
+        ['wan-1', 'wan-1', 'wan-1', 'wan-1'],
+      ],
+      lastTileInGame: false,
+      lastTileOfKind: false,
+      prevalentWind: 'wind-east',
+      replacementTile: false,
+      robbingTheKong: false,
+      seatWind: 'wind-south',
+      winFromDiscard: true,
+      winFromWall: false,
+      winningTile: 'wind-south',
+    },
+  },
 ];
 
 const filter: string[] =
