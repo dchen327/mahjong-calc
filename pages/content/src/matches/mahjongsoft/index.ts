@@ -5,7 +5,7 @@ console.log('[CEB] mahjong soft content script loaded');
 
 // 🧪 AUTO-TEST MODE: Set to true to automatically test hands until a wrong answer is found
 const AUTO_TEST_MODE = true;
-const AUTO_TEST_MAX_ITERATIONS = 10000;
+const AUTO_TEST_MAX_ITERATIONS = 20000;
 const AUTO_TEST_DELAY_MS = 50;
 
 const cards = [
