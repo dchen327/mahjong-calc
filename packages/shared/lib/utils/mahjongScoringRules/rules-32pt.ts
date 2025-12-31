@@ -1,5 +1,16 @@
-import { getAllTilesFromGrouping, getChows, isHonor, isTerminal } from '../mahjongTile.js';
-import type { KongGroup, MahjongScoringRule } from 'index.mjs';
+import { getAllTilesFromGrouping, getChows, isHonor, isTerminal, getAllChowIndices } from '../mahjongTile.js';
+import type { KongGroup, MahjongGroup, MahjongScoringRule } from '../types.js';
+
+// Matcher for four shifted chows - all 4 chows in same suit, shifted by 1 or 2
+const isFourShiftedChows = (grouping: MahjongGroup[]): boolean => {
+  const chows = getChows(grouping);
+  if (chows.length !== 4) return false;
+  const suit = chows[0].tile.type;
+  if (!chows.every(chow => chow.tile.type === suit)) return false;
+  const values = chows.map(chow => Number(chow.tile.value)).sort((a, b) => a - b);
+  const diffs = values.slice(1).map((v, i) => v - values[i]);
+  return diffs.every(d => d === 1) || diffs.every(d => d === 2);
+};
 
 // 32 point rules
 // Four Shifted Chows - Four Chows in a suit, each shifted up by one or two but not a combination of both.
@@ -7,19 +18,8 @@ export const fourShiftedChows: MahjongScoringRule = {
   name: '64. Four Shifted Chows',
   points: 32,
   excludes: ['3. Short Straight', '51. Pure Shifted Chows'],
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    // ensure there are exactly 4 chows of same suit
-    if (chows.length !== 4) return 0;
-    const suit = chows[0].tile.type;
-    if (!chows.every(chow => chow.tile.type === suit)) return 0;
-    // sort and check if shifted by 1 or 2
-    const values = chows.map(chow => Number(chow.tile.value)).sort((a, b) => a - b);
-    const diffs = values.slice(1).map((v, i) => v - values[i]);
-    const isShiftedByOne = diffs.every(diff => diff === 1);
-    const isShiftedByTwo = diffs.every(diff => diff === 2);
-    return isShiftedByOne || isShiftedByTwo ? 1 : 0;
-  },
+  evaluate: grouping => (isFourShiftedChows(grouping) ? 1 : 0),
+  getUsedGroupsPerInstance: grouping => (isFourShiftedChows(grouping) ? getAllChowIndices(grouping) : []),
 };
 
 // Three Kongs - Three Kongs (either melded or concealed).

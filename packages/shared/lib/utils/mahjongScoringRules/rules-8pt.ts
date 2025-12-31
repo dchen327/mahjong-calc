@@ -1,10 +1,12 @@
 import {
-  getChows,
-  getPungs,
   getKongs,
   getAllTilesFromGrouping,
   toString,
-  findMixedStraightInstances,
+  findChowTriplets,
+  findPungTriplets,
+  isMixedStraight,
+  isMixedTripleChow,
+  isMixedShiftedPungs,
 } from '../mahjongTile.js';
 import type { MahjongScoringRule } from '../types.js';
 
@@ -13,8 +15,8 @@ import type { MahjongScoringRule } from '../types.js';
 export const mixedStraight: MahjongScoringRule = {
   name: '34. Mixed Straight',
   points: 8,
-  evaluate: grouping => findMixedStraightInstances(grouping).length,
-  getUsedGroupsPerInstance: grouping => findMixedStraightInstances(grouping),
+  evaluate: grouping => findChowTriplets(grouping, isMixedStraight).length,
+  getUsedGroupsPerInstance: grouping => findChowTriplets(grouping, isMixedStraight),
 };
 
 // Reversible Tiles - The hand is composed of only Reversible (1,2,3,4,5,8,9 Circle; 2,4,5,6,8,9 Bamboo; White Dragon) tiles.
@@ -49,64 +51,16 @@ export const mixedTripleChow: MahjongScoringRule = {
   name: '36. Mixed Triple Chow',
   points: 8,
   excludes: ['2. Mixed Double Chow'],
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    const used = Array(chows.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      if (used[i]) continue;
-      for (let j = 0; j < chows.length; j++) {
-        if (i === j || used[j]) continue;
-        for (let k = 0; k < chows.length; k++) {
-          if (i === k || j === k || used[k]) continue;
-          const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number);
-          const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
-          const allDifferentSuits = new Set(suits).size === 3;
-          const isSameValue = values[0] === values[1] && values[1] === values[2];
-          if (allDifferentSuits && isSameValue) {
-            used[i] = used[j] = used[k] = true;
-            count++;
-            break;
-          }
-        }
-        if (used[i]) break;
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findChowTriplets(grouping, isMixedTripleChow).length,
+  getUsedGroupsPerInstance: grouping => findChowTriplets(grouping, isMixedTripleChow),
 };
 
 // Mixed Shifted Pungs - Three Pungs or Kongs in the three different suits, shifted up by one.
 export const mixedShiftedPungs: MahjongScoringRule = {
   name: '37. Mixed Shifted Pungs',
   points: 8,
-  evaluate: grouping => {
-    const pungsAndKongs = [...getPungs(grouping), ...getKongs(grouping)];
-    const used = Array(pungsAndKongs.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < pungsAndKongs.length; i++) {
-      if (used[i]) continue;
-      for (let j = 0; j < pungsAndKongs.length; j++) {
-        if (i === j || used[j]) continue;
-        for (let k = 0; k < pungsAndKongs.length; k++) {
-          if (i === k || j === k || used[k]) continue;
-          const [p1, p2, p3] = [pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k]];
-          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort((a, b) => a - b);
-          const suits = [p1.tile.type, p2.tile.type, p3.tile.type];
-          const allDifferentSuits = new Set(suits).size === 3;
-          const isConsecutive = values[1] === values[0] + 1 && values[2] === values[1] + 1;
-          if (allDifferentSuits && isConsecutive) {
-            used[i] = used[j] = used[k] = true;
-            count++;
-            break;
-          }
-        }
-        if (used[i]) break;
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findPungTriplets(grouping, isMixedShiftedPungs).length,
+  getUsedGroupsPerInstance: grouping => findPungTriplets(grouping, isMixedShiftedPungs),
 };
 
 // Two Concealed Kongs - Two concealed Kongs.

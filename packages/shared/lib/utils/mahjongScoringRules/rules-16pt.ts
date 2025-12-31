@@ -1,4 +1,12 @@
-import { getChows, getPungs, getKongs, getPairs, isHonor } from '../mahjongTile.js';
+import {
+  getChows,
+  getPungs,
+  getKongs,
+  getPairs,
+  isHonor,
+  findChowTriplets,
+  isPureShiftedChows,
+} from '../mahjongTile.js';
 import type { MahjongScoringRule, TileType } from '../types.js';
 
 // 16 point rules
@@ -50,26 +58,8 @@ export const threeSuitedTerminalChows: MahjongScoringRule = {
 export const pureShiftedChows: MahjongScoringRule = {
   name: '51. Pure Shifted Chows',
   points: 16,
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    // Check all unique triples of chows in the same suit
-    for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        for (let k = j + 1; k < chows.length; k++) {
-          const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          if (c1.tile.type !== c2.tile.type || c1.tile.type !== c3.tile.type) continue;
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
-          const diff1 = values[1] - values[0];
-          const diff2 = values[2] - values[1];
-          // All differences must be 1 (shifted by one) or all 2 (shifted by two)
-          if ((diff1 === 1 && diff2 === 1) || (diff1 === 2 && diff2 === 2)) {
-            return 1;
-          }
-        }
-      }
-    }
-    return 0;
-  },
+  evaluate: grouping => findChowTriplets(grouping, isPureShiftedChows).length,
+  getUsedGroupsPerInstance: grouping => findChowTriplets(grouping, isPureShiftedChows),
 };
 
 // All Fives - Each group (triples and pair) has a 5.

@@ -1,4 +1,12 @@
-import { getPungs, getKongs, getPairs, getChows, getAllTilesFromGrouping, isHonor } from '../mahjongTile.js';
+import {
+  getPungs,
+  getKongs,
+  getPairs,
+  getAllTilesFromGrouping,
+  isHonor,
+  findChowTriplets,
+  isMixedShiftedChows,
+} from '../mahjongTile.js';
 import type { MahjongScoringRule, TileType } from '../types.js';
 
 // 6 point rules
@@ -33,32 +41,8 @@ export const halfFlush: MahjongScoringRule = {
 export const mixedShiftedChows: MahjongScoringRule = {
   name: '30. Mixed Shifted Chows',
   points: 6,
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    const used = Array(chows.length).fill(false);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      if (used[i]) continue;
-      for (let j = 0; j < chows.length; j++) {
-        if (i === j || used[j]) continue;
-        for (let k = 0; k < chows.length; k++) {
-          if (i === k || j === k || used[k]) continue;
-          const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
-          const suits = [c1.tile.type, c2.tile.type, c3.tile.type];
-          const allDifferentSuits = new Set(suits).size === 3;
-          const isConsecutive = values[1] === values[0] + 1 && values[2] === values[1] + 1;
-          if (allDifferentSuits && isConsecutive) {
-            used[i] = used[j] = used[k] = true;
-            count++;
-            break;
-          }
-        }
-        if (used[i]) break;
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findChowTriplets(grouping, isMixedShiftedChows).length,
+  getUsedGroupsPerInstance: grouping => findChowTriplets(grouping, isMixedShiftedChows),
 };
 
 // All Types - The player's hand contains a Bamboo tile, a Character tile, a Circle tile, a Dragon tile and a Wind tile.

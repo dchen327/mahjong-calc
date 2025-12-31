@@ -1,4 +1,14 @@
-import { getPairs, getAllTilesFromGrouping, isHonor, getKongs, getPungs, getChows } from '../mahjongTile.js';
+import {
+  getPairs,
+  getPungs,
+  getKongs,
+  getAllTilesFromGrouping,
+  isHonor,
+  findChowTriplets,
+  findPungTriplets,
+  isPureTripleChow,
+  isPureShiftedPungs,
+} from '../mahjongTile.js';
 import type { MahjongScoringRule } from '../types.js';
 
 // 24 point rules
@@ -56,46 +66,16 @@ export const pureTripleChow: MahjongScoringRule = {
   name: '59. Pure Triple Chow',
   points: 24,
   excludes: ['1. Pure Double Chow'],
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        for (let k = j + 1; k < chows.length; k++) {
-          const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-          if (c1.tile.type === c2.tile.type && c1.tile.type === c3.tile.type) {
-            const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number);
-            // All values must be the same
-            if (values[0] === values[1] && values[1] === values[2]) return 1;
-          }
-        }
-      }
-    }
-    return 0;
-  },
+  evaluate: grouping => findChowTriplets(grouping, isPureTripleChow).length,
+  getUsedGroupsPerInstance: grouping => findChowTriplets(grouping, isPureTripleChow),
 };
 
 // Pure Shifted Pungs - Three Pungs or Kongs in the same suit, shifted up by one.
 export const pureShiftedPungs: MahjongScoringRule = {
   name: '60. Pure Shifted Pungs',
   points: 24,
-  evaluate: grouping => {
-    const pungsAndKongs = [...getPungs(grouping), ...getKongs(grouping)];
-    // Check all unique triples of pungs/kongs in the same suit
-    for (let i = 0; i < pungsAndKongs.length; i++) {
-      for (let j = i + 1; j < pungsAndKongs.length; j++) {
-        for (let k = j + 1; k < pungsAndKongs.length; k++) {
-          const [p1, p2, p3] = [pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k]];
-          if (p1.tile.type !== p2.tile.type || p1.tile.type !== p3.tile.type) continue;
-          const values = [p1.tile.value, p2.tile.value, p3.tile.value].map(Number).sort((a, b) => a - b);
-          const diff1 = values[1] - values[0];
-          const diff2 = values[2] - values[1];
-          // All differences must be 1 (shifted by one)
-          if (diff1 === 1 && diff2 === 1) return 1;
-        }
-      }
-    }
-    return 0;
-  },
+  evaluate: grouping => findPungTriplets(grouping, isPureShiftedPungs).length,
+  getUsedGroupsPerInstance: grouping => findPungTriplets(grouping, isPureShiftedPungs),
 };
 
 // Upper Tiles - The hand is composed of only suit tiles with numerical values of 7 or greater.

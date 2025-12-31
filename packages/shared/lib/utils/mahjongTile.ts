@@ -129,23 +129,22 @@ export const findChowPairs = (
   return result;
 };
 
-// Helper to find mixed straight - returns group indices per instance
-export const findMixedStraightInstances = (grouping: MahjongGroup[]): number[][] => {
+// Generic helper to find chow triplets matching a condition, returns group indices per instance
+export const findChowTriplets = (
+  grouping: MahjongGroup[],
+  matcher: (a: ChowGroup, b: ChowGroup, c: ChowGroup) => boolean,
+): number[][] => {
   const chows = getChows(grouping);
   const chowIndices = grouping.map((g, idx) => (g.kind === 'chow' ? idx : -1)).filter(idx => idx !== -1);
   const used = Array(chows.length).fill(false);
   const result: number[][] = [];
-
   for (let i = 0; i < chows.length; i++) {
     if (used[i]) continue;
     for (let j = 0; j < chows.length; j++) {
       if (i === j || used[j]) continue;
       for (let k = 0; k < chows.length; k++) {
         if (i === k || j === k || used[k]) continue;
-        const [c1, c2, c3] = [chows[i], chows[j], chows[k]];
-        const values = [c1.tile.value, c2.tile.value, c3.tile.value].map(Number).sort((a, b) => a - b);
-        const suits = new Set([c1.tile.type, c2.tile.type, c3.tile.type]);
-        if (suits.size === 3 && values[0] === 1 && values[1] === 4 && values[2] === 7) {
+        if (matcher(chows[i], chows[j], chows[k])) {
           used[i] = used[j] = used[k] = true;
           result.push([chowIndices[i], chowIndices[j], chowIndices[k]]);
           break;
@@ -155,6 +154,105 @@ export const findMixedStraightInstances = (grouping: MahjongGroup[]): number[][]
     }
   }
   return result;
+};
+
+// Generic helper to find pung/kong triplets matching a condition, returns group indices per instance
+export const findPungTriplets = (
+  grouping: MahjongGroup[],
+  matcher: (a: PungGroup | KongGroup, b: PungGroup | KongGroup, c: PungGroup | KongGroup) => boolean,
+): number[][] => {
+  const pungs = getPungs(grouping);
+  const kongs = getKongs(grouping);
+  const pungsAndKongs = [...pungs, ...kongs];
+  const pungIndices = grouping
+    .map((g, idx) => (g.kind === 'pung' || g.kind === 'kong' ? idx : -1))
+    .filter(idx => idx !== -1);
+  const used = Array(pungsAndKongs.length).fill(false);
+  const result: number[][] = [];
+  for (let i = 0; i < pungsAndKongs.length; i++) {
+    if (used[i]) continue;
+    for (let j = 0; j < pungsAndKongs.length; j++) {
+      if (i === j || used[j]) continue;
+      for (let k = 0; k < pungsAndKongs.length; k++) {
+        if (i === k || j === k || used[k]) continue;
+        if (matcher(pungsAndKongs[i], pungsAndKongs[j], pungsAndKongs[k])) {
+          used[i] = used[j] = used[k] = true;
+          result.push([pungIndices[i], pungIndices[j], pungIndices[k]]);
+          break;
+        }
+      }
+      if (used[i]) break;
+    }
+  }
+  return result;
+};
+
+// Triplet matchers for chows
+export const isMixedStraight = (a: ChowGroup, b: ChowGroup, c: ChowGroup): boolean => {
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number).sort((a, b) => a - b);
+  const suits = new Set([a.tile.type, b.tile.type, c.tile.type]);
+  return suits.size === 3 && values[0] === 1 && values[1] === 4 && values[2] === 7;
+};
+
+export const isMixedShiftedChows = (a: ChowGroup, b: ChowGroup, c: ChowGroup): boolean => {
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number).sort((a, b) => a - b);
+  const suits = new Set([a.tile.type, b.tile.type, c.tile.type]);
+  return suits.size === 3 && values[1] === values[0] + 1 && values[2] === values[1] + 1;
+};
+
+export const isMixedTripleChow = (a: ChowGroup, b: ChowGroup, c: ChowGroup): boolean => {
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number);
+  const suits = new Set([a.tile.type, b.tile.type, c.tile.type]);
+  return suits.size === 3 && values[0] === values[1] && values[1] === values[2];
+};
+
+export const isPureShiftedChows = (a: ChowGroup, b: ChowGroup, c: ChowGroup): boolean => {
+  if (a.tile.type !== b.tile.type || a.tile.type !== c.tile.type) return false;
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number).sort((a, b) => a - b);
+  const diff1 = values[1] - values[0];
+  const diff2 = values[2] - values[1];
+  return (diff1 === 1 && diff2 === 1) || (diff1 === 2 && diff2 === 2);
+};
+
+export const isPureTripleChow = (a: ChowGroup, b: ChowGroup, c: ChowGroup): boolean => {
+  if (a.tile.type !== b.tile.type || a.tile.type !== c.tile.type) return false;
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number);
+  return values[0] === values[1] && values[1] === values[2];
+};
+
+// Triplet matchers for pungs/kongs
+export const isMixedShiftedPungs = (
+  a: PungGroup | KongGroup,
+  b: PungGroup | KongGroup,
+  c: PungGroup | KongGroup,
+): boolean => {
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number).sort((a, b) => a - b);
+  const suits = new Set([a.tile.type, b.tile.type, c.tile.type]);
+  return suits.size === 3 && values[1] === values[0] + 1 && values[2] === values[1] + 1;
+};
+
+export const isPureShiftedPungs = (
+  a: PungGroup | KongGroup,
+  b: PungGroup | KongGroup,
+  c: PungGroup | KongGroup,
+): boolean => {
+  if (a.tile.type !== b.tile.type || a.tile.type !== c.tile.type) return false;
+  const values = [a.tile.value, b.tile.value, c.tile.value].map(Number).sort((a, b) => a - b);
+  return values[1] === values[0] + 1 && values[2] === values[1] + 1;
+};
+
+// Helper for all-4-chows rules (uses all chows in the grouping)
+export const getAllChowIndices = (grouping: MahjongGroup[]): number[][] => {
+  const chowIndices = grouping.map((g, idx) => (g.kind === 'chow' ? idx : -1)).filter(idx => idx !== -1);
+  return chowIndices.length === 4 ? [chowIndices] : [];
+};
+
+// Helper for all-4-pungs/kongs rules (uses all pungs/kongs in the grouping)
+export const getAllPungIndices = (grouping: MahjongGroup[]): number[][] => {
+  const pungIndices = grouping
+    .map((g, idx) => (g.kind === 'pung' || g.kind === 'kong' ? idx : -1))
+    .filter(idx => idx !== -1);
+  return pungIndices.length === 4 ? [pungIndices] : [];
 };
 
 export const isTerminalOrHonorPung = (

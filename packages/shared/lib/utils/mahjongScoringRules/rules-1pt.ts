@@ -22,18 +22,8 @@ import type { MahjongScoringRule, TileType } from '../types.js';
 export const pureDoubleChow: MahjongScoringRule = {
   name: '1. Pure Double Chow',
   points: 1,
-  evaluate: grouping => {
-    const chows = getChows(grouping);
-    let count = 0;
-    for (let i = 0; i < chows.length; i++) {
-      for (let j = i + 1; j < chows.length; j++) {
-        if (isSameChow(chows[i], chows[j])) {
-          count++;
-        }
-      }
-    }
-    return count;
-  },
+  evaluate: grouping => findChowPairs(grouping, isSameChow).length,
+  getUsedGroupsPerInstance: grouping => findChowPairs(grouping, isSameChow),
 };
 
 // Mixed Double Chow - Two Chows of the same numbers in different suits.
